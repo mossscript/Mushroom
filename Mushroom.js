@@ -3336,7 +3336,7 @@ class Mushroom {
       let l = root.contrast != 'auto' ? root.contrast : this.#Colors.toHslObj(root.color).l;
       let accentName = ['primary', 'secondary', 'tertiary', 'quaternary'];
       let ah = this.#accentHue();
-      let accentArr = ah.map(i => i + h > 360 ? i + h - 360 : i + h);
+      let hueArr = ah.map(i => i + h > 360 ? i + h - 360 : i + h);
       let sh, ss, sl
       if (this.#Colors.test(root.surfaceColor)) {
          sh = this.#Colors.toHslObj(root.surfaceColor).h;
@@ -3350,13 +3350,13 @@ class Mushroom {
                sh = h;
                break;
             case 'secondary':
-               if (accentArr.length > 1) sh = accentArr[1];
+               if (hueArr.length > 1) sh = hueArr[1];
                break;
             case 'tertiary':
-               if (accentArr.length > 2) sh = accentArr[2];
+               if (hueArr.length > 2) sh = hueArr[2];
                break;
             case 'quaternary':
-               if (accentArr.length > 3) sh = accentArr[3];
+               if (hueArr.length > 3) sh = hueArr[3];
                break;
             default:
                sh = h;
@@ -3374,7 +3374,7 @@ class Mushroom {
             custom: []
          },
          hue: {
-            accent: accentArr,
+            accent: hueArr,
             error: 0,
             surface: sh,
             background: sh,
@@ -3516,6 +3516,30 @@ class Mushroom {
       let { h, s } = this.#Colors.toHslObj(root.color);
       let accentName = ['primary', 'secondary', 'tertiary', 'quaternary'];
       let ah = this.#accentHue();
+      let hueArr = ah.map(i => i + h > 360 ? i + h - 360 : i + h);
+      let sh, ss
+      if (this.#Colors.test(root.surfaceColor)) {
+         sh = this.#Colors.toHslObj(root.surfaceColor).h;
+         ss = this.#Colors.toHslObj(root.surfaceColor).s;
+      } else {
+         ss = s;
+         switch (root.surfaceColor) {
+            case 'primary':
+               sh = h;
+               break;
+            case 'secondary':
+               if (hueArr.length > 1) sh = hueArr[1];
+               break;
+            case 'tertiary':
+               if (hueArr.length > 2) sh = hueArr[2];
+               break;
+            case 'quaternary':
+               if (hueArr.length > 3) sh = hueArr[3];
+               break;
+            default:
+               sh = h;
+         }
+      }
       let mode = root.darkmode;
       let result = {};
       let data = {
@@ -3526,16 +3550,16 @@ class Mushroom {
             neutral: ['neutral', 'neutral-variant']
          },
          hue: {
-            accent: ah.map(i => i + h > 360 ? i + h - 360 : i + h),
+            accent: hueArr,
             error: 0,
             custom: [],
-            neutral: h
+            neutral: sh
          },
          saturation: {
             accent: s,
             error: 100,
             custom: [],
-            neutral: [s / 4, s / 2]
+            neutral: [ss / 4, ss / 2]
          },
          alpha: {
             accent: 1,

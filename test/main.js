@@ -1,3 +1,3 @@
-let M = new Mushroom();
-
-console.log(['primary', 'secondary', 'tertiary', 'quaternary'])
+let M = new Mushroom({
+   hasSubPalette: true,
+});
