@@ -46,6 +46,13 @@ class Mushroom {
          this.#grow();
       }
    }
+   setSurfaceColor(color) {
+      let start = performance.now();
+      let result = this.#setSettings({ surfaceColor: color });
+      if (result) {
+         this.#grow();
+      }
+   }
    setTheme(val) {
       let result = this.#setSettings({ theme: val });
       if (result) {
@@ -186,6 +193,12 @@ class Mushroom {
          },
          setColor: (color) => {
             let result = this.#setCustomRootsSettings(root, { color: color });
+            if (result) {
+               this.#grow();
+            }
+         },
+         setSurfaceColor: (color) => {
+            let result = this.#setCustomRootsSettings(root, { surfaceColor: color });
             if (result) {
                this.#grow();
             }
@@ -3097,6 +3110,14 @@ class Mushroom {
                   log[i] = false;
                }
                break;
+            case 'surfaceColor':
+               if (this.#Colors.test(settings[i]) || ['primary', 'secondary', 'tertiary', 'quaternary'].includes(settings[i])) {
+                  this.#settings[i] = settings[i];
+                  log[i] = true;
+               } else {
+                  log[i] = false;
+               }
+               break;
             case 'root':
                if (/^(?:[a-z_][a-z0-9_-]*|\*[a-z0-9_-]*|\.[a-z_][a-z0-9_-]*|#[a-z_][a-z0-9_-]*)$/i.test(settings[i])) {
                   this.#settings[i] = settings[i];
@@ -3211,6 +3232,15 @@ class Mushroom {
                            log[i] = false;
                         }
                         break;
+                     case 'surfaceColor':
+                        if (this.#Colors.test(settings[i]) || ['primary', 'secondary', 'tertiary', 'quaternary'].includes(settings[i])) {
+                           this.#customRootsSettings[j][i] = settings[i];
+                           log[i] = true;
+                        } else {
+                           this.#customRootsSettings[j][i] = this.#settings[i];
+                           log[i] = false;
+                        }
+                        break;
                      case 'prefix':
                         if (/^[a-z_-][a-z0-9_-]*$/i.test(settings[i])) {
                            this.#customRootsSettings[j][i] = settings[i];
@@ -3306,6 +3336,32 @@ class Mushroom {
       let l = root.contrast != 'auto' ? root.contrast : this.#Colors.toHslObj(root.color).l;
       let accentName = ['primary', 'secondary', 'tertiary', 'quaternary'];
       let ah = this.#accentHue();
+      let accentArr = ah.map(i => i + h > 360 ? i + h - 360 : i + h);
+      let sh, ss, sl
+      if (this.#Colors.test(root.surfaceColor)) {
+         sh = this.#Colors.toHslObj(root.surfaceColor).h;
+         ss = this.#Colors.toHslObj(root.surfaceColor).s;
+         sl = root.contrast != 'auto' ? root.contrast : this.#Colors.toHslObj(root.surfaceColor).l;
+      } else {
+         ss = s;
+         sl = l;
+         switch (root.surfaceColor) {
+            case 'primary':
+               sh = h;
+               break;
+            case 'secondary':
+               if (accentArr.length > 1) sh = accentArr[1];
+               break;
+            case 'tertiary':
+               if (accentArr.length > 2) sh = accentArr[2];
+               break;
+            case 'quaternary':
+               if (accentArr.length > 3) sh = accentArr[3];
+               break;
+            default:
+               sh = h;
+         }
+      }
       let mode = root.darkmode ? 'dark' : 'light';
       let result = {};
       let data = {
@@ -3318,18 +3374,18 @@ class Mushroom {
             custom: []
          },
          hue: {
-            accent: ah.map(i => i + h > 360 ? i + h - 360 : i + h),
+            accent: accentArr,
             error: 0,
-            surface: h,
-            background: h,
+            surface: sh,
+            background: sh,
             outline: h,
             custom: []
          },
          saturation: {
             accent: s,
             error: 100,
-            surface: s / 3,
-            background: s / 3,
+            surface: ss / 3,
+            background: ss / 3,
             outline: [s / 3, s / 2],
             custom: [],
          },
@@ -3338,29 +3394,29 @@ class Mushroom {
                accent: [[35, 100], [80 + l / 10, 20 - l / 10]],
                accentLD: [[45, 100], [25, 100]],
                surface: [
-                  [85 + l / 10, 30 - l / 10],
-                  [83 + l / 10, 30 - l / 10],
-                  [80 + l / 10, 30 - l / 10],
-                  [78 + l / 10, 30 - l / 10],
-                  [70 + l / 10, 30 - l / 10]],
-               background: [90 + l / 10, 20 - l / 10],
+                  [85 + sl / 10, 30 - sl / 10],
+                  [83 + sl / 10, 30 - sl / 10],
+                  [80 + sl / 10, 30 - sl / 10],
+                  [78 + sl / 10, 30 - sl / 10],
+                  [70 + sl / 10, 30 - sl / 10]],
+               background: [90 + sl / 10, 20 - sl / 10],
                outline: [60, 80],
                inverse: [70, 10],
-               inverseSurface: [15 + l / 10, 80 - l / 10]
+               inverseSurface: [15 + sl / 10, 80 - sl / 10]
             },
             dark: {
                accent: [[70, 10], [20 - l / 10, 70 + l / 10]],
                accentLD: [[80, 10], [60, 10]],
                surface: [
-                  [15 - l / 10, 65 + l / 10],
-                  [17 - l / 10, 65 + l / 10],
-                  [19 - l / 10, 65 + l / 10],
-                  [21 - l / 10, 65 + l / 10],
-                  [30 - l / 10, 65 + l / 10]],
-               background: [10 - l / 10, 70 + l / 10],
+                  [15 - sl / 10, 65 + sl / 10],
+                  [17 - sl / 10, 65 + sl / 10],
+                  [19 - sl / 10, 65 + sl / 10],
+                  [21 - sl / 10, 65 + sl / 10],
+                  [30 - sl / 10, 65 + sl / 10]],
+               background: [10 - sl / 10, 70 + sl / 10],
                outline: [40, 20],
                inverse: [35, 100],
-               inverseSurface: [85 - l / 10, 25 + l / 10]
+               inverseSurface: [85 - sl / 10, 25 + sl / 10]
             },
          },
          alpha: {

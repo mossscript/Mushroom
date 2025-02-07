@@ -1,3 +1,3 @@
 let M = new Mushroom();
 
-console.log(M)
+console.log(['primary', 'secondary', 'tertiary', 'quaternary'])
