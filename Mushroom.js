@@ -3684,9 +3684,8 @@ class Mushroom {
          }
       }
 
-      if (code !== '' && (palette || subPalette)) {
+      if ((this.#settings.sprout) && (code !== '') && (palette || subPalette)) {
          this.#sprout(code)
-
       }
 
       this.palette = palette;
