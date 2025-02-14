@@ -327,7 +327,7 @@ class Mushroom {
    #ColorTransform = class {
       #colors;
       constructor() {
-         this.version = "1.2";
+         this.version = "1.3";
          this.#colors = {
             "abbey": "#4c4f56",
             "absolutezero": "#0048ba",
@@ -2811,7 +2811,7 @@ class Mushroom {
          return a < 1 ? `hsla(${h} ${s}% ${l}% / ${a})` : `hsl(${h} ${s}% ${l}%)`;
       }
       hslObjToRgb(h, s, l, a = 1) {
-         if (h == undefined || s == undefined || l == undefined || h > 255 || s > 255 || l > 255 || h < 0 || s < 0 || l < 0 || a > 1) return undefined;
+         if (h == undefined || s == undefined || l == undefined || h > 360 || s > 100 || l > 100 || h < 0 || s < 0 || l < 0 || a > 1) return undefined;
          h = h / 360;
          s = s / 100;
          l = l / 100;
@@ -2857,7 +2857,7 @@ class Mushroom {
          return a < 1 ? `rgba(${r} ${g} ${b} / ${a})` : `rgb(${r} ${g} ${b})`;
       }
       hslObjToHex(h, s, l, a = 1) {
-         if (h == undefined || s == undefined || l == undefined || h > 255 || s > 255 || l > 255 || h < 0 || s < 0 || l < 0 || a > 1) return undefined;
+         if (h == undefined || s == undefined || l == undefined || h > 360 || s > 100 || l > 100 || h < 0 || s < 0 || l < 0 || a > 1) return undefined;
          h = h / 360;
          s = s / 100;
          l = l / 100;
