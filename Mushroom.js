@@ -29,10 +29,12 @@ class Mushroom {
       };
       this.#customRootsSettings = {};
       
-      this.#setupSettings(primarySettings);
+      let log = this.#setupSettings(primarySettings);
       if (!!primarySettings && !!primarySettings.customRoots) {
-         this.#setupCustomRootsSettings(primarySettings.customRoots);
+         log['customRoot'] = this.#setupCustomRootsSettings(primarySettings.customRoots);
       }
+      
+      this.log = log;
       this.#PCS = window.matchMedia("(prefers-color-scheme:dark)");
       this.#PCS.onchange = () => {
          if (this.#settings.theme === 'auto') {
@@ -3095,8 +3097,8 @@ class Mushroom {
    #setCustomRootsSettings(root, settings) {
       let obj = {};
       obj[root] = settings;
-      let log = this.#setupCustomRootsSettings(obj);
-      return Object.values(log).every(item => item);
+      let rootLog = this.#setupCustomRootsSettings(obj);
+      return Object.values(rootLog).every(item => item.log);
    }
    #setupSettings(settings) {
       let log = {}
@@ -3111,7 +3113,7 @@ class Mushroom {
                }
                break;
             case 'color':
-               if (this.#Colors.test(settings[i])) {
+               if (typeof settings[i] == 'string' && this.#Colors.test(settings[i])) {
                   this.#settings[i] = settings[i];
                   log[i] = true;
                } else {
@@ -3119,7 +3121,7 @@ class Mushroom {
                }
                break;
             case 'surfaceColor':
-               if (this.#Colors.test(settings[i]) || ['primary', 'secondary', 'tertiary', 'quaternary'].includes(settings[i])) {
+               if (typeof settings[i] == 'string' && this.#Colors.test(settings[i]) || ['primary', 'secondary', 'tertiary', 'quaternary'].includes(settings[i])) {
                   this.#settings[i] = settings[i];
                   log[i] = true;
                } else {
@@ -3211,10 +3213,11 @@ class Mushroom {
       return log;
    }
    #setupCustomRootsSettings(obj) {
-      let log = {};
+      let rootLog = {};
       let arrID = Object.keys(obj);
       if (arrID.length != 0) {
          for (let j of arrID) {
+            let log = {}
             let settings = obj[j];
             if (/^(?:[a-z_][a-z0-9_-]*|\*[a-z0-9_-]*|\.[a-z_][a-z0-9_-]*|#[a-z_][a-z0-9_-]*)$/i.test(j)) {
                this.#customRootsSettings[j] = {};
@@ -3232,7 +3235,7 @@ class Mushroom {
                         }
                         break;
                      case 'color':
-                        if (this.#Colors.test(settings[i])) {
+                        if (typeof settings[i] == 'string' && this.#Colors.test(settings[i])) {
                            this.#customRootsSettings[j][i] = settings[i];
                            log[i] = true;
                         } else {
@@ -3241,7 +3244,7 @@ class Mushroom {
                         }
                         break;
                      case 'surfaceColor':
-                        if (this.#Colors.test(settings[i]) || ['primary', 'secondary', 'tertiary', 'quaternary'].includes(settings[i])) {
+                        if (typeof settings[i] == 'string' && this.#Colors.test(settings[i]) || ['primary', 'secondary', 'tertiary', 'quaternary'].includes(settings[i])) {
                            this.#customRootsSettings[j][i] = settings[i];
                            log[i] = true;
                         } else {
@@ -3322,7 +3325,7 @@ class Mushroom {
                         }
                         break;
                      case 'customColor':
-                        if (typeof settings[i] === 'object' && !Array.isArray(settings[i]) && Object.values(settings[i]).every(item => !this.#Colors.test(item)) && Object.keys(settings[i]).every(item => /^[a-z][a-z0-9]*$/i.test(item))) {
+                        if (typeof settings[i] == 'object' && !Array.isArray(settings[i]) && Object.values(settings[i]).every(item => this.#Colors.test(item)) && Object.keys(settings[i]).every(item => /^[a-z][a-z0-9]*$/i.test(item))) {
                            this.#customRootsSettings[j][i] = settings[i];
                            log[i] = true;
                         } else {
@@ -3335,9 +3338,10 @@ class Mushroom {
             } else {
                log['root'] = false;
             }
+            rootLog[j] = log
          }
       }
-      return log
+      return rootLog
    }
    #palette(root = this.#settings) {
       let { h, s } = this.#Colors.toHslObj(root.color);
@@ -3512,7 +3516,11 @@ class Mushroom {
             data.saturation.custom.push(this.#Colors.toHslObj(root.customColor[i]).s);
             data.alpha.custom.push(this.#Colors.toHslObj(root.customColor[i]).a);
          } else {
-            // write error
+            if (root == this.#settings) {
+               this.log['customColor'] = false;
+            } else {
+               this.log['customRoot'][root.root]['customColor'] = false;
+            }
          }
       }
       for (let i in data.name.custom) {
@@ -3714,7 +3722,6 @@ class Mushroom {
       this.hue = this.#Colors.toHslObj(this.#settings.color).h;
       this.saturation = this.#Colors.toHslObj(this.#settings.color).s;
       this.lightness = this.#Colors.toHslObj(this.#settings.color).l;
-
       this.sprout = this.#settings.sprout;
       this.root = this.#settings.root;
       this.color = this.#settings.color;
@@ -3728,7 +3735,6 @@ class Mushroom {
       this.reverseSubPalette = this.#settings.reverseSubPalette;
       this.customColor = this.#settings.customColor;
       this.customRoots = this.#customRootsSettings;
-
       this.growTime = Number((performance.now() - this.#startTime).toFixed(1)) / 1000;
       let renderEvent = new CustomEvent('render', {});
       this.#virtualElement.dispatchEvent(renderEvent);
