@@ -3,12 +3,15 @@ class Mushroom {
    #startTime;
    #settings;
    #customRootsSettings;
+   #virtualElement;
    #Colors;
    #PCS;
    constructor(primarySettings) {
       this.#startTime = performance.now();
       this.version = "5";
       this.#Colors = new this.#ColorTransform();
+      this.#virtualElement = document.createElement('div');
+      this.eventTarget = new EventTarget();
       this.#settings = {
          sprout: true,
          color: 'Royal Blue',
@@ -25,12 +28,11 @@ class Mushroom {
          customColor: {},
       };
       this.#customRootsSettings = {};
-
+      
       this.#setupSettings(primarySettings);
       if (!!primarySettings && !!primarySettings.customRoots) {
          this.#setupCustomRootsSettings(primarySettings.customRoots);
       }
-
       this.#PCS = window.matchMedia("(prefers-color-scheme:dark)");
       this.#PCS.onchange = () => {
          if (this.#settings.theme === 'auto') {
@@ -38,6 +40,12 @@ class Mushroom {
          }
       }
       this.#grow()
+   }
+   set onrender(callback) {
+      this.#virtualElement.addEventListener('render', callback)
+   }
+   get onrender() {
+      return undefined
    }
    setColor(color) {
       let start = performance.now();
@@ -3391,28 +3399,42 @@ class Mushroom {
          },
          lightness: {
             light: {
-               accent: [[35, 100], [80 + l / 10, 20 - l / 10]],
-               accentLD: [[45, 100], [25, 100]],
+               accent: [
+                  [35, 100],
+                  [80 + l / 10, 20 - l / 10]
+               ],
+               accentLD: [
+                  [45, 100],
+                  [25, 100]
+               ],
                surface: [
                   [85 + sl / 10, 30 - sl / 10],
                   [83 + sl / 10, 30 - sl / 10],
                   [80 + sl / 10, 30 - sl / 10],
                   [78 + sl / 10, 30 - sl / 10],
-                  [70 + sl / 10, 30 - sl / 10]],
+                  [70 + sl / 10, 30 - sl / 10]
+               ],
                background: [90 + sl / 10, 20 - sl / 10],
                outline: [60, 80],
                inverse: [70, 10],
                inverseSurface: [15 + sl / 10, 80 - sl / 10]
             },
             dark: {
-               accent: [[70, 10], [20 - l / 10, 70 + l / 10]],
-               accentLD: [[80, 10], [60, 10]],
+               accent: [
+                  [70, 10],
+                  [20 - l / 10, 70 + l / 10]
+               ],
+               accentLD: [
+                  [80, 10],
+                  [60, 10]
+               ],
                surface: [
                   [15 - sl / 10, 65 + sl / 10],
                   [17 - sl / 10, 65 + sl / 10],
                   [19 - sl / 10, 65 + sl / 10],
                   [21 - sl / 10, 65 + sl / 10],
-                  [30 - sl / 10, 65 + sl / 10]],
+                  [30 - sl / 10, 65 + sl / 10]
+               ],
                background: [10 - sl / 10, 70 + sl / 10],
                outline: [40, 20],
                inverse: [35, 100],
@@ -3649,7 +3671,6 @@ class Mushroom {
       let palette = this.#settings.hasPalette ? this.#palette() : undefined;
       let subPalette = this.#settings.hasSubPalette ? this.#subPalette() : undefined;
       let code = '';
-
       if (palette && subPalette) {
          code += this.#code(palette);
          code += this.#code(subPalette);
@@ -3683,15 +3704,12 @@ class Mushroom {
             code += customCode;
          }
       }
-
       if ((this.#settings.sprout) && (code !== '') && (palette || subPalette)) {
          this.#sprout(code)
       }
-
       this.palette = palette;
       this.subPalette = subPalette;
       this.code = code;
-
       this.darkmode = this.#settings.darkmode;
       this.hue = this.#Colors.toHslObj(this.#settings.color).h;
       this.saturation = this.#Colors.toHslObj(this.#settings.color).s;
@@ -3712,5 +3730,7 @@ class Mushroom {
       this.customRoots = this.#customRootsSettings;
 
       this.growTime = Number((performance.now() - this.#startTime).toFixed(1)) / 1000;
+      let renderEvent = new CustomEvent('render', {});
+      this.#virtualElement.dispatchEvent(renderEvent);
    }
 }
