@@ -1,343 +1,9 @@
-/*** Mushroom v5 ***/
-class Mushroom {
-   #startTime;
-   #settings;
-   #customRootsSettings;
-   #virtualElement;
-   #Colors;
-   #PCS;
-   constructor(primarySettings) {
-      this.#startTime = performance.now();
-      this.version = "5";
-      this.#Colors = new this.#ColorTransform();
-      this.#virtualElement = document.createElement('div');
-      this.eventTarget = new EventTarget();
-      this.#settings = {
-         sprout: true,
-         color: 'Royal Blue',
-         surfaceColor: 'primary',
-         root: ':root',
-         prefix: '',
-         theme: 'auto',
-         contrast: 'auto',
-         colorScheme: 'Analogous',
-         hasPalette: true,
-         hasSubPalette: false,
-         reverseSubPalette: false,
-         parts: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-         customColor: {},
-      };
-      this.#customRootsSettings = {};
-      
-      let log = this.#setupSettings(primarySettings);
-      if (!!primarySettings && !!primarySettings.customRoots) {
-         log['customRoot'] = this.#setupCustomRootsSettings(primarySettings.customRoots);
-      }
-      
-      this.log = log;
-      this.#PCS = window.matchMedia("(prefers-color-scheme:dark)");
-      this.#PCS.onchange = () => {
-         if (this.#settings.theme === 'auto') {
-            this.#grow();
-         }
-      }
-      this.#grow()
-   }
-   set onrender(callback) {
-      this.#virtualElement.addEventListener('render', callback)
-   }
-   get onrender() {
-      return undefined
-   }
-   setColor(color) {
-      let start = performance.now();
-      let result = this.#setSettings({ color: color });
-      if (result) {
-         this.#grow();
-      }
-   }
-   setSurfaceColor(color) {
-      let start = performance.now();
-      let result = this.#setSettings({ surfaceColor: color });
-      if (result) {
-         this.#grow();
-      }
-   }
-   setTheme(val) {
-      let result = this.#setSettings({ theme: val });
-      if (result) {
-         this.#grow();
-      }
-   }
-   toggleTheme() {
-      let result = this.#setSettings({ theme: (this.#settings.darkmode) ? 'light' : 'dark' });
-      if (result) {
-         this.#grow();
-      }
-   }
-   setParts(arr) {
-      let result = this.#setSettings({ parts: arr });
-      if (result) {
-         this.#grow();
-      }
-   }
-   setPalette(bool) {
-      let result = this.#setSettings({ hasPalette: bool });
-      if (result) {
-         this.#grow();
-      }
-   }
-   setSubPalette(bool) {
-      let result = this.#setSettings({ hasSubPalette: boll });
-      if (result) {
-         this.#grow();
-      }
-   }
-   setReverseSubPalette(bool) {
-      let result = this.#setSettings({ reverseSubPalette: bool });
-      if (result) {
-         this.#grow();
-      }
-   }
-   setHue(num) {
-      num = (num >= 0) ? (num % 360) + 1 : 360 - ((-num) % 360);
-      let result = this.#setSettings({ color: `hsl(${num},${this.#Colors.toHslObj(this.#settings.color).s}%,${this.#Colors.toHslObj(this.#settings.color).l}%)` });
-      if (result) {
-         this.#grow();
-      }
-   }
-   setSaturation(num) {
-      num = (num >= 0) ? (num % 100) + 1 : 100 - ((-num) % 100);
-      let result = this.#setSettings({ color: `hsl(${this.#Colors.toHslObj(this.#settings.color).h},${num}%,${this.#Colors.toHslObj(this.#settings.color).l}%)` });
-      if (result) {
-         this.#grow();
-      }
-   }
-   setLightness(num) {
-      num = (num >= 0) ? (num % 100) + 1 : 100 - ((-num) % 100);
-      let result = this.#setSettings({ color: `hsl(${this.#Colors.toHslObj(this.#settings.color).h},${this.#Colors.toHslObj(this.#settings.color).s}%,${num}%)` });
-      if (result) {
-         this.#grow();
-      }
-   }
-   setContrast(val) {
-      let result = this.#setSettings({ contrast: val });
-      if (result) {
-         this.#grow();
-      }
-   }
-   random() {
-      let h = Math.round(Math.random() * 360);
-      let s = Math.round(Math.random() * 100);
-      let l = Math.round(Math.random() * 100);
-      let result = this.#setSettings({ color: this.#Colors.hslObjToHex(h, s, l) });
-      if (result) {
-         this.#grow();
-      }
-   }
-   addCustomColor(key, color) {
-      let arg = {};
-      arg[key] = color;
-      let obj = Object.assign(this.#settings.customColor, arg);
-      let result = this.#setSettings({ customColor: obj });
-      if (result) {
-         this.#grow();
-      }
-   }
-   setCustomColor(obj) {
-      let result = this.#setSettings({ customColor: obj });
-      if (result) {
-         this.#grow();
-      }
-   }
-   setColorScheme(val) {
-      let result = this.#setSettings({ colorScheme: val });
-      if (result) {
-         this.#grow();
-      }
-   }
-   removeCustomColor(key) {
-      let obj = this.#settings.customColor;
-      delete obj[key]
-      let result = this.#setSettings({ customColor: obj });
-      if (result) {
-         this.#grow();
-      }
-   }
-   clearCustomColor() {
-      let result = this.#setSettings({ customColor: {} });
-      if (result) {
-         this.#grow();
-      }
-   }
-   addRoot(root, settings) {
-      let result = this.#setCustomRootsSettings(root, settings);
-      if (result) {
-         this.#grow();
-      }
-   }
-   removeRoot(root) {
-      delete this.#customRootsSettings[root];
-      this.#grow();
-   }
-   renameRoot(oldVal, newVal) {
-      if (/^(?:[a-z_][a-z0-9_-]*|\*[a-z0-9_-]*|\.[a-z_][a-z0-9_-]*|#[a-z_][a-z0-9_-]*)$/i.test(newVal)) {
-         this.#customRootsSettings[newVal] = this.#customRootsSettings[oldVal];
-         this.#customRootsSettings[oldVal];
-         this.#grow();
-      } else {
-         // write error 
-      }
-   }
-   roots(root) {
-      let obj = {
-         addSettings: (key, value) => {
-            let result = this.#setCustomRootsSettings(root, { key: value });
-            if (result) {
-               this.#grow();
-            }
-         },
-         removeSettings: (key) => {
-            delete this.#customRootsSettings[root][settings];
-            this.#grow();
-         },
-         setColor: (color) => {
-            let result = this.#setCustomRootsSettings(root, { color: color });
-            if (result) {
-               this.#grow();
-            }
-         },
-         setSurfaceColor: (color) => {
-            let result = this.#setCustomRootsSettings(root, { surfaceColor: color });
-            if (result) {
-               this.#grow();
-            }
-         },
-         setTheme: (val) => {
-            let result = this.#setCustomRootsSettings(root, { theme: val });
-            if (result) {
-               this.#grow();
-            }
-         },
-         toggleTheme: () => {
-            let result = this.#setCustomRootsSettings(root, { theme: (this.#settings.darkmode) ? 'light' : 'dark' });
-            if (result) {
-               this.#grow();
-            }
-         },
-         setParts: (arr) => {
-            let result = this.#setCustomRootsSettings(root, { parts: arr });
-            if (result) {
-               this.#grow();
-            }
-         },
-         setPalette: (bool) => {
-            let result = this.#setCustomRootsSettings(root, { hasPalette: bool });
-            if (result) {
-               this.#grow();
-            }
-         },
-         setSubPalette: (bool) => {
-            let result = this.#setCustomRootsSettings(root, { hasSubPalette: bool });
-            if (result) {
-               this.#grow();
-            }
-         },
-         setReverseSubPalette: (bool) => {
-            let result = this.#setCustomRootsSettings(root, { reverseSubPalette: bool });
-            if (result) {
-               this.#grow();
-            }
-         },
-         setHue: (num) => {
-            num = (num >= 0) ? (num % 360) + 1 : 360 - ((-num) % 360);
-            let result = this.#setCustomRootsSettings(root, { color: `hsl(${num},${this.#Colors.toHslObj(this.#settings.color).s}%,${this.#Colors.toHslObj(this.#settings.color).l}%)` });
-            if (result) {
-               this.#grow();
-            }
-         },
-         setSaturation: (num) => {
-            num = (num >= 0) ? (num % 100) + 1 : 100 - ((-num) % 100);
-            let result = this.#setCustomRootsSettings(root, { color: `hsl(${this.#Colors.toHslObj(this.#settings.color).h},${num}%,${this.#Colors.toHslObj(this.#settings.color).l}%)` });
-            if (result) {
-               this.#grow();
-            }
-         },
-         setLightness: (num) => {
-            num = (num >= 0) ? (num % 100) + 1 : 100 - ((-num) % 100);
-            let result = this.#setCustomRootsSettings(root, { color: `hsl(${this.#Colors.toHslObj(this.#settings.color).h},${this.#Colors.toHslObj(this.#settings.color).s}%,${num}%)` });
-            if (result) {
-               this.#grow();
-            }
-         },
-         setContrast: (num) => {
-            let result = this.#setCustomRootsSettings(root, { contrast: val });
-            if (result) {
-               this.#grow();
-            }
-         },
-         random: () => {
-            let h = Math.round(Math.random() * 360);
-            let s = Math.round(Math.random() * 100);
-            let l = Math.round(Math.random() * 100);
-            let result = this.#setCustomRootsSettings(root, { color: this.#Colors.hslObjToHex(h, s, l) });
-            if (result) {
-               this.#grow();
-            }
-         },
-         addCustomColor: (key, color) => {
-            let obj = Object.assign(this.#settings.customColor, { key: color });
-            let result = this.#setCustomRootsSettings(root, { customColor: obj });
-            if (result) {
-               this.#grow();
-            }
-         },
-         setCustomColor: (obj) => {
-            let result = this.#setCustomRootsSettings(root, { customColor: obj });
-            if (result) {
-               this.#grow();
-            }
-         },
-         setColorScheme: (val) => {
-            let result = this.#setCustomRootsSettings(root, { colorScheme: val });
-            if (result) {
-               this.#grow();
-            }
-         },
-         removeCustomColor: (key) => {
-            let obj = this.#settings.customColor;
-            delete obj[key]
-            let result = this.#setCustomRootsSettings(root, { customColor: obj });
-            if (result) {
-               this.#grow();
-            }
-         },
-         clearCustomColor: () => {
-            let result = this.#setCustomRootsSettings(root, { customColor: {} });
-            if (result) {
-               this.#grow();
-            }
-         },
-         remove: () => {
-            delete this.#customRootsSettings[root];
-            this.#grow();
-         },
-         rename: (str) => {
-            if (/^(?:[a-z_][a-z0-9_-]*|\*[a-z0-9_-]*|\.[a-z_][a-z0-9_-]*|#[a-z_][a-z0-9_-]*)$/i.test(newVal)) {
-               this.#customRootsSettings[str] = this.#customRootsSettings[root];
-               this.#customRootsSettings[root];
-               this.#grow();
-            } else {
-               // write error
-            }
-         },
-      }
-      return Object.assign(obj, this.#customRootsSettings[root])
-   };
-   #ColorTransform = class {
+/*** Mushroom v5.1 ***/
+(() => {
+   class Colors {
       #colors;
       constructor() {
-         this.version = "1.3";
+         this.version = "1.2";
          this.#colors = {
             "abbey": "#4c4f56",
             "absolutezero": "#0048ba",
@@ -3052,691 +2718,1332 @@ class Mushroom {
          }
       }
    }
-   #getDarkmode(root = this.#settings) {
-      if (root.theme == 'auto') {
-         root.darkmode = (this.#PCS.matches);
-      } else {
-         root.darkmode = (root.theme == 'dark') ? true : false;
+   class Validation {
+      #color;
+      constructor() {
+         this.version = '1';
+         this.#color = new Colors();
       }
-   }
-   #accentHue() {
-      switch (this.#settings.colorScheme.toLowerCase()) {
-         case 'analogous':
-            return [0, 30, -30];
-            break;
-         case 'complementary':
-            return [0, 180];
-            break;
-         case 'tetradic':
-            return [0, 60, 180, 240];
-            break;
-         case 'compound':
-            return [0, 150, -150];
-            break;
-         case 'split-complementary':
-            return [0, 30, 180, 210];
-            break;
-         case 'monochromatic':
-            return [0];
-            break;
-         case 'triadic':
-            return [0, 120, -120];
-            break;
-         case 'square':
-            return [0, 90, -90, 180];
-            break;
-         default:
-            this.#settings.colorScheme = 'Analogous';
-            return [0, 30, -30];
+      bool(val) {
+         return typeof val == 'boolean';
       }
-   }
-   #setSettings(settings) {
-      let log = this.#setupSettings(settings);
-      return Object.values(log).every(item => item);
-   }
-   #setCustomRootsSettings(root, settings) {
-      let obj = {};
-      obj[root] = settings;
-      let rootLog = this.#setupCustomRootsSettings(obj);
-      return Object.values(rootLog).every(item => item.log);
-   }
-   #setupSettings(settings) {
-      let log = {}
-      for (let i in settings) {
-         switch (i) {
-            case 'sprout':
-               if (typeof settings[i] == 'boolean') {
-                  this.#settings[i] = settings[i];
-                  log[i] = true;
-               } else {
-                  log[i] = false;
-               }
-               break;
-            case 'color':
-               if (typeof settings[i] == 'string' && this.#Colors.test(settings[i])) {
-                  this.#settings[i] = settings[i];
-                  log[i] = true;
-               } else {
-                  log[i] = false;
-               }
-               break;
-            case 'surfaceColor':
-               if (typeof settings[i] == 'string' && this.#Colors.test(settings[i]) || ['primary', 'secondary', 'tertiary', 'quaternary'].includes(settings[i])) {
-                  this.#settings[i] = settings[i];
-                  log[i] = true;
-               } else {
-                  log[i] = false;
-               }
-               break;
-            case 'root':
-               if (/^(?:[a-z_][a-z0-9_-]*|\*[a-z0-9_-]*|\.[a-z_][a-z0-9_-]*|#[a-z_][a-z0-9_-]*)$/i.test(settings[i])) {
-                  this.#settings[i] = settings[i];
-                  log[i] = true;
-               } else {
-                  log[i] = false;
-               }
-               break;
-            case 'prefix':
-               if (/^[a-z_-][a-z0-9_-]*$/i.test(settings[i])) {
-                  this.#settings[i] = settings[i];
-                  log[i] = true;
-               } else {
-                  log[i] = false;
-               }
-               break;
-            case 'theme':
-               if (/^(dark|light|auto)$/i.test(settings[i])) {
-                  this.#settings[i] = settings[i];
-                  log[i] = true;
-               } else {
-                  log[i] = false;
-               }
-               break
-            case 'contrast':
-               if ((settings[i] == 'auto') || (typeof settings[i] == 'number' && settings[i] >= 0 && settings[i] <= 100)) {
-                  this.#settings[i] = settings[i];
-                  log[i] = true;
-               } else {
-                  log[i] = false;
-               }
-               break;
-            case 'colorScheme':
-               if (/^(analogous|complementary|tetradic|compound|split-complementary|monochromatic|triadic|square)$/i.test(settings[i])) {
-                  this.#settings[i] = settings[i];
-                  log[i] = true;
-               } else {
-                  log[i] = false;
-               }
-               break;
-            case 'hasPalette':
-               if (typeof settings[i] == 'boolean') {
-                  this.#settings[i] = settings[i];
-                  log[i] = true;
-               } else {
-                  log[i] = false;
-               }
-               break;
-            case 'hasSubPalette':
-               if (typeof settings[i] == 'boolean') {
-                  this.#settings[i] = settings[i];
-                  log[i] = true;
-               } else {
-                  log[i] = false;
-               }
-               break;
-            case 'reverseSubPalette':
-               if (typeof settings[i] == 'boolean') {
-                  this.#settings[i] = settings[i];
-                  log[i] = true;
-               } else {
-                  log[i] = false;
-               }
-               break;
-            case 'parts':
-               if (Array.isArray(settings[i]) && settings[i].every(item => typeof item === 'number')) {
-                  this.#settings[i] = settings[i];
-                  log[i] = true;
-               } else {
-                  log[i] = false;
-               }
-               break;
-            case 'customColor':
-               if (typeof settings[i] == 'object' && !Array.isArray(settings[i]) && Object.values(settings[i]).every(item => this.#Colors.test(item)) && Object.keys(settings[i]).every(item => /^[a-z][a-z0-9]*$/i.test(item))) {
-                  this.#settings[i] = settings[i];
-                  log[i] = true;
-               } else {
-                  log[i] = false;
-               }
-               break;
+      string(val) {
+         return typeof val == 'string';
+      }
+
+      sprout(val) {
+         return this.bool(val);
+      }
+      color(val) {
+         return typeof val == 'string' && this.#color.test(val);
+      }
+      surfaceColor(val) {
+         return typeof val == 'string' && this.#color.test(val) || /^(primary|secondary|tertiary|quaternary)$/i.test(val);
+      }
+      root(val) {
+         try {
+            document.querySelector(val);
+            return true
+         } catch {
+            return false
          }
       }
-      return log;
+      prefix(val) {
+         return /^[a-z]*$/i.test(val);
+      }
+      theme(val) {
+         return /^(dark|light|auto)$/i.test(val);
+      }
+      contrast(val) {
+         return (val == 'auto') || (typeof val == 'number' && val >= 0 && val <= 100);
+      }
+      colorScheme(val) {
+         return /^(analogous|complementary|tetradic|compound|split-complementary|monochromatic|triadic|square)$/i.test(val);
+      }
+      consoleLog(val) {
+         return this.bool(val);
+      }
+      hasPalette(val) {
+         return this.bool(val);
+      }
+      hasSubPalette(val) {
+         return this.bool(val);
+      }
+      reverseSubPalette(val) {
+         return this.bool(val);
+      }
+      parts(val) {
+         return Array.isArray(val) && val.every(i => typeof i == 'number' && i >= 0 && i <= 100);
+      }
+      customColors(val) {
+         return typeof val == 'object' && !Array.isArray(val) && Object.values(val).every(i => this.#color.test(i)) && Object.keys(val).every(i => /^[a-z][a-z0-9]*$/i.test(i));
+      }
+
+      log(obj) {
+         let log = {};
+         for (let i in obj) {
+            switch (i) {
+               case 'sprout':
+                  log[i] = this.sprout(obj[i]);
+                  break;
+               case 'color':
+                  log[i] = this.color(obj[i]);
+                  break;
+               case 'surfaceColor':
+                  log[i] = this.surfaceColor(obj[i]);
+                  break;
+               case 'root':
+                  log[i] = this.root(obj[i]);
+                  break;
+               case 'prefix':
+                  log[i] = this.prefix(obj[i]);
+                  break;
+               case 'theme':
+                  log[i] = this.theme(obj[i]);
+                  break;
+               case 'contrast':
+                  log[i] = this.contrast(obj[i]);
+                  break;
+               case 'colorScheme':
+                  log[i] = this.colorScheme(obj[i]);
+                  break;
+               case 'hasPalette':
+                  log[i] = this.hasPalette(obj[i]);
+                  break;
+               case 'hasSubPalette':
+                  log[i] = this.hasSubPalette(obj[i]);
+                  break;
+               case 'reverseSubPalette':
+                  log[i] = this.reverseSubPalette(obj[i]);
+                  break;
+               case 'consoleLog':
+                  log[i] = this.consoleLog(obj[i]);
+                  break;
+               case 'parts':
+                  log[i] = this.parts(obj[i]);
+                  break;
+               case 'customColors':
+                  log[i] = this.customColors(obj[i]);
+                  break;
+            }
+         }
+         return log;
+      }
+      all(obj) {
+         let log = this.log(obj);
+         return Object.values(log).every(i => i);
+      }
    }
-   #setupCustomRootsSettings(obj) {
-      let rootLog = {};
-      let arrID = Object.keys(obj);
-      if (arrID.length != 0) {
-         for (let j of arrID) {
-            let log = {}
-            let settings = obj[j];
-            if (/^(?:[a-z_][a-z0-9_-]*|\*[a-z0-9_-]*|\.[a-z_][a-z0-9_-]*|#[a-z_][a-z0-9_-]*)$/i.test(j)) {
-               this.#customRootsSettings[j] = {};
-               Object.assign(this.#customRootsSettings[j], this.#settings);
-               this.#customRootsSettings[j]['root'] = j;
-               log['root'] = true;
-               for (let i in settings) {
-                  switch (i) {
-                     case 'sprout':
-                        if (typeof settings[i] == 'boolean') {
-                           this.#customRootsSettings[j][i] = settings[i];
-                           log[i] = true;
-                        } else {
-                           log[i] = false;
-                        }
-                        break;
-                     case 'color':
-                        if (typeof settings[i] == 'string' && this.#Colors.test(settings[i])) {
-                           this.#customRootsSettings[j][i] = settings[i];
-                           log[i] = true;
-                        } else {
-                           this.#customRootsSettings[j][i] = this.#settings[i];
-                           log[i] = false;
-                        }
-                        break;
-                     case 'surfaceColor':
-                        if (typeof settings[i] == 'string' && this.#Colors.test(settings[i]) || ['primary', 'secondary', 'tertiary', 'quaternary'].includes(settings[i])) {
-                           this.#customRootsSettings[j][i] = settings[i];
-                           log[i] = true;
-                        } else {
-                           this.#customRootsSettings[j][i] = this.#settings[i];
-                           log[i] = false;
-                        }
-                        break;
-                     case 'prefix':
-                        if (/^[a-z_-][a-z0-9_-]*$/i.test(settings[i])) {
-                           this.#customRootsSettings[j][i] = settings[i];
-                           log[i] = true;
-                        } else {
-                           this.#customRootsSettings[j][i] = this.#settings[i];
-                           log[i] = false;
-                        }
-                        break;
-                     case 'theme':
-                        if (/^(dark|light|auto)$/i.test(settings[i])) {
-                           this.#customRootsSettings[j][i] = settings[i];
-                           log[i] = true;
-                        } else {
-                           this.#customRootsSettings[j][i] = this.#settings[i];
-                           log[i] = false;
-                        }
-                        break
-                     case 'contrast':
-                        if ((settings[i] == 'auto') || (typeof settings[i] == 'number' && settings[i] >= 0 && settings[i] <= 100)) {
-                           this.#customRootsSettings[j][i] = settings[i];
-                           log[i] = true;
-                        } else {
-                           this.#customRootsSettings[j][i] = this.#settings[i];
-                           log[i] = false;
-                        }
-                        break;
-                     case 'colorScheme':
-                        if (/^(analogous|complementary|tetradic|compound|split-complementary|monochromatic|triadic|square)$/i.test(settings[i])) {
-                           this.#customRootsSettings[j][i] = settings[i];
-                           log[i] = true;
-                        } else {
-                           this.#customRootsSettings[j][i] = this.#settings[i];
-                           log[i] = false;
-                        }
-                        break;
-                     case 'hasPalette':
-                        if (typeof settings[i] == 'boolean') {
-                           this.#customRootsSettings[j][i] = settings[i];
-                           log[i] = true;
-                        } else {
-                           this.#customRootsSettings[j][i] = this.#settings[i];
-                           log[i] = false;
-                        }
-                        break;
-                     case 'hasSubPalette':
-                        if (typeof settings[i] == 'boolean') {
-                           this.#customRootsSettings[j][i] = settings[i];
-                           log[i] = true;
-                        } else {
-                           this.#customRootsSettings[j][i] = this.#settings[i];
-                           log[i] = false;
-                        }
-                        break;
-                     case 'reverseSubPalette':
-                        if (typeof settings[i] == 'boolean') {
-                           this.#customRootsSettings[j][i] = settings[i];
-                           log[i] = true;
-                        } else {
-                           this.#customRootsSettings[j][i] = this.#settings[i];
-                           log[i] = false;
-                        }
-                        break;
-                     case 'parts':
-                        if (Array.isArray(settings[i]) && settings[i].every(item => typeof item === 'number')) {
-                           this.#customRootsSettings[j][i] = settings[i];
-                           log[i] = true;
-                        } else {
-                           this.#customRootsSettings[j][i] = this.#settings[i];
-                           log[i] = false;
-                        }
-                        break;
-                     case 'customColor':
-                        if (typeof settings[i] == 'object' && !Array.isArray(settings[i]) && Object.values(settings[i]).every(item => this.#Colors.test(item)) && Object.keys(settings[i]).every(item => /^[a-z][a-z0-9]*$/i.test(item))) {
-                           this.#customRootsSettings[j][i] = settings[i];
-                           log[i] = true;
-                        } else {
-                           this.#customRootsSettings[j][i] = this.#settings[i];
-                           log[i] = false;
-                        }
-                        break;
+   class Mushroom {
+      // private variable 
+      #Colors;
+      #Validation;
+      #configs;
+      #roots;
+      #PCS;
+      constructor(configs) {
+         this.version = "5.1";
+         this.#Colors = new Colors();
+         this.#Validation = new Validation();
+         this.#PCS = window.matchMedia("(prefers-color-scheme:dark)");
+         this.#configs = {
+            sprout: true,
+            color: 'Royal Blue',
+            surfaceColor: 'primary',
+            root: ':root',
+            prefix: '',
+            theme: 'auto',
+            contrast: 'auto',
+            colorScheme: 'Analogous',
+            hasPalette: true,
+            hasSubPalette: false,
+            reverseSubPalette: false,
+            parts: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+            customColors: {},
+         };
+         this.#roots = {};
+
+         this.#setUp(configs);
+
+         this.#PCS.onchange = () => {
+            if (this.theme == 'auto') {
+               this.#grow();
+            }
+         }
+         this.#grow();
+
+         this.#info(`Mushroom ${this.version}`)
+      }
+      // setter & getter 
+      set color(val) {
+         this.setColor(val);
+      }
+      get color() {
+         return this.#configs.color;
+      }
+      set surfaceColor(val) {
+         this.setSurfaceColor(val);
+      }
+      get surfaceColor() {
+         return this.#configs.surfaceColor;
+      }
+      set theme(val) {
+         this.setTheme(val);
+      }
+      get theme() {
+         return this.#configs.theme;
+      }
+      set colorScheme(val) {
+         this.setColorScheme(val);
+      }
+      get colorScheme() {
+         return this.#configs.colorScheme;
+      }
+      set hue(val) {
+         this.setHue(val);
+      }
+      get hue() {
+         return this.#Colors.toHslObj(this.#configs.color).h;
+      }
+      set saturation(val) {
+         this.setSaturation(val);
+      }
+      get saturation() {
+         return this.#Colors.toHslObj(this.#configs.color).s;
+      }
+      set lightness(val) {
+         this.setLightness(val);
+      }
+      get lightness() {
+         return this.#Colors.toHslObj(this.#configs.color).l;
+      }
+      set contrast(val) {
+         this.setContrast(val);
+      }
+      get contrast() {
+         return this.#configs.contrast;
+      }
+      set prefix(val) {
+         this.setPrefix(val);
+      }
+      get prefix() {
+         return this.#configs.prefix;
+      }
+      set root(val) {
+         this.setRoot(val);
+      }
+      get root() {
+         return this.#configs.root;
+      }
+      set parts(val) {
+         this.setParts(val);
+      }
+      get parts() {
+         return this.#configs.parts;
+      }
+      set sprout(val) {
+         this.setSprout(val);
+      }
+      get sprout() {
+         return this.#configs.sprout;
+      }
+      set palette(val) {
+         this.setPalette(val);
+      }
+      get palette() {
+         return this.getPalette();
+      }
+      set hasPalette(val) {
+         this.setPalette(val);
+      }
+      get hasPalette() {
+         return this.#configs.hasPalette;
+      }
+      set subPalette(val) {
+         this.setSubPalette(val);
+      }
+      get subPalette() {
+         return this.getSubPalette();
+      }
+      set hasSubPalette(val) {
+         this.setSubPalette(val);
+      }
+      get hasSubPalette() {
+         return this.#configs.hasSubPalette;
+      }
+      set reverseSubPalette(val) {
+         this.setReverseSubPalette(val);
+      }
+      get reverseSubPalette() {
+         return this.#configs.reverseSubPalette;
+      }
+      set customColors(val) {
+         this.setCustomColors(val);
+      }
+      get customColors() {
+         return this.#configs.customColors;
+      }
+      set darkmode(val) {
+         this.setDarkmode(val);
+      }
+      get darkmode() {
+         if (this.theme == 'auto') {
+            return (this.#PCS.matches);
+         } else {
+            return (this.theme == 'dark') ? true : false;
+         }
+      }
+
+      // property
+      setColor(val, root = this.#configs.root) {
+         let valid = this.#Validation.color(val);
+         if (valid) {
+            this.#setting('color', val, root);
+         } else {
+            this.#errorLib(1, val);
+         }
+      }
+      setSurfaceColor(val, root = this.#configs.root) {
+         let valid = this.#Validation.setSurfaceColor(val);
+         if (valid) {
+            this.#setting('surfaceColor', val, root);
+         } else {
+            this.#errorLib(2, val);
+         }
+      }
+      setTheme(val, root = this.#configs.root) {
+         let valid = this.#Validation.theme(val);
+         if (valid) {
+            this.#setting('theme', val, root);
+         } else {
+            this.#errorLib(3, val);
+         }
+      }
+      setColorScheme(val, root = this.#configs.root) {
+         let valid = this.#Validation.colorScheme(val);
+         if (valid) {
+            this.#setting('colorScheme', val, root);
+         } else {
+            this.#errorLib(4, val);
+         }
+      }
+      setHue(val, root = this.#configs.root) {
+         let { s, l } = this.#Colors.toHslObj(this.#roots[root].color);
+         let h = (val >= 0) ? (val % 360) : 360 - ((-val) % 360);
+         let hsl = `hsl(${h}deg ${s}% ${l}%)`;
+         let valid = this.#Validation.color(hsl);
+         if (valid) {
+            this.#setting('color', hsl, root);
+         } else {
+            this.#errorLib(5, val);
+         }
+      }
+      setSaturation(val, root = this.#configs.root) {
+         let { h, l } = this.#Colors.toHslObj(this.#roots[root].color);
+         let hsl = `hsl(${h}deg ${val}% ${l}%)`;
+         let valid = this.#Validation.color(hsl);
+         if (valid) {
+            this.#setting('color', hsl, root);
+         } else {
+            this.#errorLib(6, val);
+         }
+      }
+      setLightness(val, root = this.#configs.root) {
+         let { h, s } = this.#Colors.toHslObj(this.#roots[root].color);
+         let hsl = `hsl(${h}deg ${s}% ${val}%)`;
+         let valid = this.#Validation.color(hsl);
+         if (valid) {
+            this.#setting('color', hsl, root);
+         } else {
+            this.#errorLib(6, val);
+         }
+      }
+      setContrast(val, root = this.#configs.root) {
+         let valid = this.#Validation.contrast(val);
+         if (valid) {
+            this.#setting('contrast', val, root);
+         } else {
+            this.#errorLib(6, val);
+         }
+      }
+      setPrefix(val, root = this.#configs.root) {
+         let valid = this.#Validation.prefix(val);
+         if (valid) {
+            this.#setting('prefix', val, root);
+         } else {
+            this.#errorLib(7, val);
+         }
+      }
+      setParts(val, root = this.#configs.root) {
+         let valid = this.#Validation.parts(val);
+         if (valid) {
+            this.#setting('parts', val.sort(), root);
+         } else {
+            this.#errorLib(9, val);
+         }
+      }
+      setSprout(val, root = this.#configs.root) {
+         let valid = this.#Validation.sprout(val);
+         if (valid) {
+            this.#setting('sprout', val, root);
+         } else {
+            this.#errorLib(10, val);
+         }
+      }
+      setPalette(val, root = this.#configs.root) {
+         let valid = this.#Validation.hasPalette(val);
+         if (valid) {
+            this.#setting('hasPalette', val, root);
+         } else {
+            this.#errorLib(10, val);
+         }
+      }
+      setSubPalette(val, root = this.#configs.root) {
+         let valid = this.#Validation.hasSubPalette(val);
+         if (valid) {
+            this.#setting('hasSubPalette', val, root);
+         } else {
+            this.#errorLib(10, val);
+         }
+      }
+      setReverseSubPalette(val, root = this.#configs.root) {
+         let valid = this.#Validation.reverseSubPalette(val);
+         if (valid) {
+            this.#setting('reverseSubPalette', val, root);
+         } else {
+            this.#errorLib(10, val);
+         }
+      }
+      setDarkmode(val, root = this.#configs.root) {
+         let valid = this.#Validation.bool(val);
+         if (valid) {
+            this.#setting('theme', val ? 'dark' : 'light', root);
+         } else {
+            this.#errorLib(10, val);
+         }
+      }
+      setCustomColors(val, root = this.#configs.root) {
+         let valid = this.#Validation.customColors(val);
+         if (valid) {
+            this.#setting('customColors', val, root);
+         } else {
+            this.#errorLib(11, val);
+         }
+      }
+      addCustomColors(key, val, root = this.#configs.root) {
+         let arg = {};
+         arg[key] = val;
+         let obj = Object.assign(this.#roots[root].customColors, arg);
+         let valid = this.#Validation.customColors(obj);
+         if (valid) {
+            this.#setting('customColors', obj, root);
+         } else {
+            this.#errorLib(11, val);
+         }
+      }
+      removeCustomColors(key, root = this.#configs.root) {
+         delete this.#roots[root].customColors[key];
+         this.#grow();
+      }
+      clearCustomColors(val, root = this.#configs.root) {
+         this.#roots[root].customColors = {};
+         this.#grow();
+      }
+      toggleTheme(root = this.#configs.root) {
+         this.#roots[root].theme = this.#roots[root].theme == 'light' ? 'dark' : 'light';
+         this.#grow();
+      }
+      getPalette(root = this.#configs.root) {
+         return this.#roots[root].palette;
+      }
+      getSubPalette(root = this.#configs.root) {
+         return this.#roots[root].palette;
+      }
+
+      // root
+      addRoot(val, opt) {
+         if (Object.keys(this.#roots).includes(val)) {
+            this.#errorLib(12, val);
+         } else if (this.#Validation.root(val)) {
+            this.#roots[val] = {};
+            Object.assign(this.#roots[val], this.#configs);
+            if (opt) {
+               let log = this.#Validation.log(opt);
+               for (let i in log) {
+                  if (log[i]) {
+                     this.#roots[val][i] = opt[i];
+                  } else {
+                     this.roots(val)[i] = opt[i];
                   }
                }
-            } else {
-               log['root'] = false;
             }
-            rootLog[j] = log
+            this.#grow();
+         } else {
+            this.#errorLib(8, val);
          }
       }
-      return rootLog
-   }
-   #palette(root = this.#settings) {
-      let { h, s } = this.#Colors.toHslObj(root.color);
-      let l = root.contrast != 'auto' ? root.contrast : this.#Colors.toHslObj(root.color).l;
-      let accentName = ['primary', 'secondary', 'tertiary', 'quaternary'];
-      let ah = this.#accentHue();
-      let hueArr = ah.map(i => i + h > 360 ? i + h - 360 : i + h);
-      let sh, ss, sl
-      if (this.#Colors.test(root.surfaceColor)) {
-         sh = this.#Colors.toHslObj(root.surfaceColor).h;
-         ss = this.#Colors.toHslObj(root.surfaceColor).s;
-         sl = root.contrast != 'auto' ? root.contrast : this.#Colors.toHslObj(root.surfaceColor).l;
-      } else {
-         ss = s;
-         sl = l;
-         switch (root.surfaceColor) {
-            case 'primary':
-               sh = h;
+      removeRoot(val) {
+         if (this.#configs.root !== val) {
+            delete this.#roots[val]
+         } else {
+            this.#errorLib(13, val);
+         }
+      }
+      renameRoot(root, val) {
+         if (Object.keys(this.#roots).includes(root)) {
+            if (!Object.keys(this.#roots).includes(val)) {
+               if (this.#Validation.root(val)) {
+                  let obj = this.#roots[root];
+                  delete this.#roots[root]
+                  this.#roots[val] = obj;
+                  this.#roots[val].root = val;
+               } else {
+                  this.#errorLib(8, root);
+               }
+            } else {
+               this.#errorLib(14, root);
+            }
+         } else {
+            this.#errorLib(15, root);
+         }
+      }
+      setRoot(val, root = this.#configs.root) {
+         this.renameRoot(root, val);
+
+      }
+      roots(root) {
+         console.log(this.#roots[root].palette)
+         let r = new this.#Root(this.#roots[root]);
+         r.onsuccess = () => {
+            this.#roots[root] = r.configs;
+            if (root != r.configs.root) {
+               this.renameRoot(root, r.configs.root)
+            }
+            this.#grow();
+         }
+         r.onerror = (e) => {
+            this.#errorLib(e.detail.key, e.detail.wrong)
+         }
+         return r;
+      }
+      getAllRoots() {
+         return this.#roots;
+      }
+
+      // class
+      #Root = class {
+         // private variable 
+         #Colors;
+         #Validation;
+         #eventTarget
+
+         // constructor
+         constructor(configs) {
+            this.configs = configs;
+            this.#Colors = new Colors();
+            this.#Validation = new Validation();
+            this.#eventTarget = new EventTarget();
+         }
+
+         // event 
+         set onerror(callback) {
+            this.#eventTarget.addEventListener('error', callback)
+         }
+         get onerror() {
+            return undefined;
+         }
+         set onsuccess(callback) {
+            this.#eventTarget.addEventListener('success', callback)
+         }
+         get onsuccess() {
+            return undefined;
+         }
+
+         // getter & setter
+         set color(val) {
+            this.setColor(val);
+         }
+         get color() {
+            return this.configs.color;
+         }
+         set surfaceColor(val) {
+            this.setSurfaceColor(val);
+         }
+         get surfaceColor() {
+            return this.configs.surfaceColor;
+         }
+         set theme(val) {
+            this.setTheme(val);
+         }
+         get theme() {
+            return this.configs.theme;
+         }
+         set colorScheme(val) {
+            this.setColorScheme(val);
+         }
+         get colorScheme() {
+            return this.configs.colorScheme;
+         }
+         set hue(val) {
+            this.setHue(val);
+         }
+         get hue() {
+            return this.#Colors.toHslObj(this.configs.color).h;
+         }
+         set saturation(val) {
+            this.setSaturation(val);
+         }
+         get saturation() {
+            return this.#Colors.toHslObj(this.configs.color).s;
+         }
+         set lightness(val) {
+            this.setLightness(val);
+         }
+         get lightness() {
+            return this.#Colors.toHslObj(this.configs.color).l;
+         }
+         set contrast(val) {
+            this.setContrast(val);
+         }
+         get contrast() {
+            return this.configs.contrast;
+         }
+         set prefix(val) {
+            this.setPrefix(val);
+         }
+         get prefix() {
+            return this.configs.prefix;
+         }
+         set root(val) {
+            this.setRoot(val);
+         }
+         get root() {
+            return this.configs.root;
+         }
+         set parts(val) {
+            this.setParts(val);
+         }
+         get parts() {
+            return this.configs.parts;
+         }
+         set sprout(val) {
+            this.setSprout(val);
+         }
+         get sprout() {
+            return this.configs.sprout;
+         }
+         set palette(val) {
+            this.setPalette(val);
+         }
+         get palette() {
+            return this.this.configs.palette;
+         }
+         set hasPalette(val) {
+            this.setPalette(val);
+         }
+         get hasPalette() {
+            return this.configs.hasPalette;
+         }
+         set subPalette(val) {
+            this.setSubPalette(val);
+         }
+         get subPalette() {
+            return this.configs.subPalette;
+         }
+         set hasSubPalette(val) {
+            this.setSubPalette(val);
+         }
+         get hasSubPalette() {
+            return this.configs.hasSubPalette;
+         }
+         set reverseSubPalette(val) {
+            this.setReverseSubPalette(val);
+         }
+         get reverseSubPalette() {
+            return this.configs.reverseSubPalette;
+         }
+         set customColors(val) {
+            this.setCustomColors(val);
+         }
+         get customColors() {
+            return this.configs.customColors;
+         }
+         set darkmode(val) {
+            this.setDarkmode(val);
+         }
+         get darkmode() {
+            if (this.theme == 'auto') {
+               return (this.#PCS.matches);
+            } else {
+               return (this.theme == 'dark') ? true : false;
+            }
+         }
+
+         // property 
+         setColor(val) {
+            let valid = this.#Validation.color(val);
+            if (valid) {
+               this.configs.color = val;
+               this.#success()
+            } else {
+               this.#error(1, val)
+            }
+         }
+         setSurfaceColor(val) {
+            let valid = this.#Validation.setSurfaceColor(val);
+            if (valid) {
+               this.configs.surfaceColor = val;
+               this.#success();
+            } else {
+               this.#error(2, val);
+            }
+         }
+         setTheme(val) {
+            let valid = this.#Validation.theme(val);
+            if (valid) {
+               this.configs.theme = val;
+               this.#success();
+            } else {
+               this.#error(3, val);
+            }
+         }
+         setColorScheme(val) {
+            let valid = this.#Validation.colorScheme(val);
+            if (valid) {
+               this.configs.colorScheme = val;
+               this.#success();
+            } else {
+               this.#error(4, val);
+            }
+         }
+         setHue(val) {
+            let { s, l } = this.#Colors.toHslObj(configs.color);
+            let h = (val >= 0) ? (val % 360) : 360 - ((-val) % 360);
+            let hsl = `hsl(${h}deg ${s}% ${l}%)`;
+            let valid = this.#Validation.color(hsl);
+            if (valid) {
+               this.configs.color = hsl;
+               this.#success();
+            } else {
+               this.#error(5, val);
+            }
+         }
+         setSaturation(val) {
+            let { h, l } = this.#Colors.toHslObj(configs.color);
+            let hsl = `hsl(${h}deg ${val}% ${l}%)`;
+            let valid = this.#Validation.color(hsl);
+            if (valid) {
+               this.configs.color = hsl;
+               this.#success();
+            } else {
+               this.#error(6, val);
+            }
+         }
+         setLightness(val) {
+            let { h, s } = this.#Colors.toHslObj(configs.color);
+            let hsl = `hsl(${h}deg ${s}% ${val}%)`;
+            let valid = this.#Validation.color(hsl);
+            if (valid) {
+               this.configs.color = hsl;
+               this.#success();
+            } else {
+               this.#error(6, val);
+            }
+         }
+         setContrast(val) {
+            let valid = this.#Validation.contrast(val);
+            if (valid) {
+               this.configs.contrast = val;
+               this.#success();
+            } else {
+               this.#error(6, val);
+            }
+         }
+         setPrefix(val) {
+            let valid = this.#Validation.prefix(val);
+            if (valid) {
+               this.configs.prefix = val;
+               this.#success();
+            } else {
+               this.#error(7, val);
+            }
+         }
+         setRoot(val) {
+            let valid = this.#Validation.root(val);
+            if (valid) {
+               this.configs.root = val;
+               this.#success();
+            } else {
+               this.#error(8, val);
+            }
+         }
+         setParts(val) {
+            let valid = this.#Validation.parts(val);
+            if (valid) {
+               this.configs.parts = val;
+               this.#success();
+            } else {
+               this.#error(9, val);
+            }
+         }
+         setSprout(val) {
+            let valid = this.#Validation.sprout(val);
+            if (valid) {
+               this.configs.sprout = val;
+               this.#success();
+            } else {
+               this.#error(10, val);
+            }
+         }
+         setPalette(val) {
+            let valid = this.#Validation.hasPalette(val);
+            if (valid) {
+               this.configs.hasPalette = val;
+               this.#success();
+            } else {
+               this.#error(10, val);
+            }
+         }
+         setSubPalette(val) {
+            let valid = this.#Validation.hasSubPalette(val);
+            if (valid) {
+               this.configs.hasSubPalette = val;
+               this.#success();
+            } else {
+               this.#error(10, val);
+            }
+         }
+         setReverseSubPalette(val) {
+            let valid = this.#Validation.reverseSubPalette(val);
+            if (valid) {
+               this.configs.reverseSubPalette = val;
+               this.#success();
+            } else {
+               this.#error(10, val);
+            }
+         }
+         setDarkmode(val) {
+            let valid = this.#Validation.bool(val);
+            if (valid) {
+               this.configs.theme = val ? 'dark' : 'light';
+               this.#success();
+            } else {
+               this.#error(10, val);
+            }
+         }
+         setCustomColors(val) {
+            let valid = this.#Validation.customColors(val);
+            if (valid) {
+               this.configs.customColors = val;
+               this.#success();
+            } else {
+               this.#error(11, val);
+            }
+         }
+         addCustomColors(key, val) {
+            let arg = {};
+            arg[key] = val;
+            let obj = Object.assign(this.#roots[root].customColors, arg);
+            let valid = this.#Validation.customColors(obj);
+            if (valid) {
+               this.configs.customColors = obj;
+               this.#success();
+            } else {
+               this.#error(11, val);
+            }
+         }
+         removeCustomColors(key) {
+            delete this.configs.customColors[key];
+            this.#success();
+         }
+         clearCustomColors(val) {
+            this.configs.customColors = {};
+            this.#success();
+         }
+         toggleTheme() {
+            this.configs.theme = this.configs.theme == 'light' ? 'dark' : 'light';
+            this.#success();
+         }
+
+         // event handler 
+         #success() {
+            let event = new CustomEvent('success', {});
+            this.#eventTarget.dispatchEvent(event);
+         }
+         #error(key, wrong) {
+            let event = new CustomEvent('error', { detail: { key, wrong } });
+            this.#eventTarget.dispatchEvent(event);
+         }
+      }
+
+      // private property
+      #setUp(configs) {
+         if (configs) {
+            let log = this.#Validation.log(configs);
+            for (let i in log) {
+               if (log[i]) {
+                  this.#configs[i] = configs[i];
+               } else {
+                  this[i] = configs[i];
+               }
+            }
+         }
+         this.#roots[this.#configs.root] = this.#configs;
+         if (configs && configs.customRoots) {
+            for (let root in configs.customRoots) {
+               if (this.#Validation.root(root)) {
+                  this.#roots[root] = {};
+                  Object.assign(this.#roots[root], this.#configs);
+                  let log = this.#Validation.log(configs.customRoots[root]);
+                  for (let i in log) {
+                     if (log[i]) {
+                        this.#roots[root][i] = configs.customRoots[root][i];
+                     } else {
+                        this.roots(root)[i] = configs.customRoots[root][i];
+                     }
+                  }
+               }
+            }
+         }
+      }
+      #setting(key, val, root) {
+         if (this.#roots[root][key] == this.#configs[key]) {
+            this.#configs[key] = val;
+         }
+         this.#roots[root][key] = val;
+         this.#grow();
+      }
+      #error(message) {
+         console.log(
+            `%cMushroom Error:%c\n %c${message}`,
+            `background: ${this.palette['error']}; color: ${this.palette['on-error']}; font-weight: 900; padding: 4px; border-radius: 8px`,
+            '',
+            `background: ${this.palette['error-container']}; color: ${this.palette['on-error-container']}; font-weight: 400; padding: 4px; border-radius: 8px; font-family: sreif; font-size: 13px;`
+         )
+      }
+      #info(title, message) {
+         if (message != undefined) {
+            console.log(
+               `%c${title}%c\n %c${message}`,
+               `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px`,
+               '',
+               `background: ${this.palette['primary-container']}; color: ${this.palette['on-primary-container']}; font-weight: 400; padding: 4px; border-radius: 8px; font-family: sreif; font-size: 13px;`
+            )
+         } else {
+            console.log(
+               `%c${title}`,
+               `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px`
+            )
+         }
+      }
+      #errorLib(key, wrong) {
+         let lib = {
+            1: `Invalid input: "${wrong}". The value must be a valid color in HEX, RGB, HSL, a recognized color name, or one of the following: primary, secondary, tertiary, quaternary.`,
+            2: `Invalid input: "${wrong}". The value must be one of the following: "primary", "secondary", "tertiary", "quaternary"`,
+            3: `Invalid input: "${wrong}". The value must be one of the following: light, dark, or auto.`,
+            4: `Invalid input: "${wrong}". The value must be one of the following: analogous, complementary, tetradic, compound, split-complementary, monochromatic, triadic, or square.`,
+            5: `Invalid input: "${wrong}". The value must be a number.`,
+            6: `Invalid input: "${wrong}". Input must be a number between 0 and 100:`,
+            7: `Invalid input: "${wrong}". The value must start with a letter and contain only letters and numbers.`,
+            8: `Invalid input: "${wrong}". The value must be a valid CSS selector, including tag names, IDs, classes, attributes, combinators, pseudo-classes, or pseudo-elements.`,
+            9: `Invalid input: "${wrong}". The value must be an array of numbers, where each number is between 0 and 100.`,
+            10: `Invalid input: "${wrong}". The value must be either "true" or "false".`,
+            11: `Invalid input: "${wrong}". The value must be an object where all keys are alphanumeric strings, and all values must be valid colors.`,
+            12: `Invalid input: "${wrong}". This value already exists as a root.`,
+            13: `Operation not allowed: "${wrong}". The main root cannot be removed.`,
+            14: `Invalid input: The name "${wrong}" is already assigned to a root.`,
+            15: `Not found: No root exists with the name "${wrong}".`,
+         }
+         this.#error(lib[key])
+      }
+      #getDarkmode(root = this.#configs.root) {
+         if (this.theme == 'auto') {
+            return (this.#PCS.matches);
+         } else {
+            return (this.#roots[root].theme == 'dark') ? true : false;
+         }
+      }
+      #getTheme(root = this.#configs.root) {
+         if (this.theme == 'auto') {
+            return (this.#PCS.matches) ? 'dark' : 'light';
+         } else {
+            return this.#roots[root].theme;
+         }
+      }
+      #accentHue(root = this.#configs.root) {
+         switch (this.#roots[root].colorScheme.toLowerCase()) {
+            case 'analogous':
+               return [0, 30, -30];
                break;
-            case 'secondary':
-               if (hueArr.length > 1) sh = hueArr[1];
+            case 'complementary':
+               return [0, 180];
                break;
-            case 'tertiary':
-               if (hueArr.length > 2) sh = hueArr[2];
+            case 'tetradic':
+               return [0, 60, 180, 240];
                break;
-            case 'quaternary':
-               if (hueArr.length > 3) sh = hueArr[3];
+            case 'compound':
+               return [0, 150, -150];
+               break;
+            case 'split-complementary':
+               return [0, 30, 180, 210];
+               break;
+            case 'monochromatic':
+               return [0];
+               break;
+            case 'triadic':
+               return [0, 120, -120];
+               break;
+            case 'square':
+               return [0, 90, -90, 180];
                break;
             default:
-               sh = h;
+               return [0, 30, -30];
          }
       }
-      let mode = root.darkmode ? 'dark' : 'light';
-      let result = {};
-      let data = {
-         name: {
-            accent: accentName.slice(0, ah.length),
-            error: 'error',
-            surface: 'surface',
-            background: 'background',
-            outline: 'outline',
-            custom: []
-         },
-         hue: {
-            accent: hueArr,
-            error: 0,
-            surface: sh,
-            background: sh,
-            outline: h,
-            custom: []
-         },
-         saturation: {
-            accent: s,
-            error: 100,
-            surface: ss / 3,
-            background: ss / 3,
-            outline: [s / 3, s / 2],
-            custom: [],
-         },
-         lightness: {
-            light: {
-               accent: [
+      #palette(root) {
+         let { h, s } = this.#Colors.toHslObj(root.color);
+         let l = root.contrast != 'auto' ? root.contrast : this.#Colors.toHslObj(root.color).l;
+         let accentName = ['primary', 'secondary', 'tertiary', 'quaternary'];
+         let ah = this.#accentHue(root.root);
+         let hueArr = ah.map(i => i + h > 360 ? i + h - 360 : i + h);
+         let sh, ss, sl;
+         if (this.#Colors.test(root.surfaceColor)) {
+            sh = this.#Colors.toHslObj(root.surfaceColor).h;
+            ss = this.#Colors.toHslObj(root.surfaceColor).s;
+            sl = root.contrast != 'auto' ? root.contrast : this.#Colors.toHslObj(root.surfaceColor).l;
+         } else {
+            ss = s;
+            sl = l;
+            switch (root.surfaceColor) {
+               case 'primary':
+                  sh = h;
+                  break;
+               case 'secondary':
+                  if (hueArr.length > 1) sh = hueArr[1];
+                  break;
+               case 'tertiary':
+                  if (hueArr.length > 2) sh = hueArr[2];
+                  break;
+               case 'quaternary':
+                  if (hueArr.length > 3) sh = hueArr[3];
+                  break;
+               default:
+                  sh = h;
+            }
+         }
+         let mode = this.#getTheme(root.root).toLowerCase();
+         let result = {};
+         let data = {
+            name: {
+               accent: accentName.slice(0, ah.length),
+               error: 'error',
+               surface: 'surface',
+               background: 'background',
+               outline: 'outline',
+               custom: []
+            },
+            hue: {
+               accent: hueArr,
+               error: 0,
+               surface: sh,
+               background: sh,
+               outline: h,
+               custom: []
+            },
+            saturation: {
+               accent: s,
+               error: 100,
+               surface: ss / 3,
+               background: ss / 3,
+               outline: [s / 3, s / 2],
+               custom: [],
+            },
+            lightness: {
+               light: {
+                  accent: [
                   [35, 100],
                   [80 + l / 10, 20 - l / 10]
                ],
-               accentLD: [
+                  accentLD: [
                   [45, 100],
                   [25, 100]
                ],
-               surface: [
+                  surface: [
                   [85 + sl / 10, 30 - sl / 10],
                   [83 + sl / 10, 30 - sl / 10],
                   [80 + sl / 10, 30 - sl / 10],
                   [78 + sl / 10, 30 - sl / 10],
                   [70 + sl / 10, 30 - sl / 10]
                ],
-               background: [90 + sl / 10, 20 - sl / 10],
-               outline: [60, 80],
-               inverse: [70, 10],
-               inverseSurface: [15 + sl / 10, 80 - sl / 10]
-            },
-            dark: {
-               accent: [
+                  background: [90 + sl / 10, 20 - sl / 10],
+                  outline: [60, 80],
+                  inverse: [70, 10],
+                  inverseSurface: [15 + sl / 10, 80 - sl / 10]
+               },
+               dark: {
+                  accent: [
                   [70, 10],
                   [20 - l / 10, 70 + l / 10]
                ],
-               accentLD: [
+                  accentLD: [
                   [80, 10],
                   [60, 10]
                ],
-               surface: [
+                  surface: [
                   [15 - sl / 10, 65 + sl / 10],
                   [17 - sl / 10, 65 + sl / 10],
                   [19 - sl / 10, 65 + sl / 10],
                   [21 - sl / 10, 65 + sl / 10],
                   [30 - sl / 10, 65 + sl / 10]
                ],
-               background: [10 - sl / 10, 70 + sl / 10],
-               outline: [40, 20],
-               inverse: [35, 100],
-               inverseSurface: [85 - sl / 10, 25 + sl / 10]
+                  background: [10 - sl / 10, 70 + sl / 10],
+                  outline: [40, 20],
+                  inverse: [35, 100],
+                  inverseSurface: [85 - sl / 10, 25 + sl / 10]
+               },
             },
-         },
-         alpha: {
-            accent: 1,
-            error: 1,
-            surface: 1,
-            background: 1,
-            outline: 1,
-            inverse: 1,
-            custom: []
-         },
-         flag: {
-            a: ['', 'on-'],
-            b: ['', '-container'],
-            c: ['', '-container-low', '-container', '-container-high', '-variant'],
-            d: ['', '-variant'],
-            e: 'inverse-',
-            f: ['light-', 'dark-']
+            alpha: {
+               accent: 1,
+               error: 1,
+               surface: 1,
+               background: 1,
+               outline: 1,
+               inverse: 1,
+               custom: []
+            },
+            flag: {
+               a: ['', 'on-'],
+               b: ['', '-container'],
+               c: ['', '-container-low', '-container', '-container-high', '-variant'],
+               d: ['', '-variant'],
+               e: 'inverse-',
+               f: ['light-', 'dark-']
+            }
+         };
+         for (let i in data.name.accent) {
+            for (let j in data.flag.b) {
+               for (let k in data.flag.a) {
+                  result[data.flag.a[k] + data.name.accent[i] + data.flag.b[j]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, data.lightness[mode].accent[j][k], data.alpha.accent);
+               }
+            }
+            for (let j in data.flag.f) {
+               for (let k in data.flag.a) {
+                  result[data.flag.a[k] + data.flag.f[j] + data.name.accent[i]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, data.lightness[mode].accentLD[j][k], data.alpha.accent);
+               }
+            }
          }
-      };
-      for (let i in data.name.accent) {
-         for (let j in data.flag.b) {
-            for (let k in data.flag.a) {
-               result[data.flag.a[k] + data.name.accent[i] + data.flag.b[j]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, data.lightness[mode].accent[j][k], data.alpha.accent);
+         for (let i in data.flag.b) {
+            for (let j in data.flag.a) {
+               result[data.flag.a[j] + data.name.error + data.flag.b[i]] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, data.lightness[mode].accent[i][j], data.alpha.error);
             }
          }
          for (let j in data.flag.f) {
             for (let k in data.flag.a) {
-               result[data.flag.a[k] + data.flag.f[j] + data.name.accent[i]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, data.lightness[mode].accentLD[j][k], data.alpha.accent);
+               result[data.flag.a[k] + data.flag.f[j] + data.name.error] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, data.lightness[mode].accentLD[j][k], data.alpha.error);
             }
          }
-      }
-      for (let i in data.flag.b) {
+         for (let i in data.name.accent) {
+            for (let j in data.flag.a) {
+               result[data.flag.a[j] + data.flag.e + data.name.accent[i]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, data.lightness[mode].inverse[j], data.alpha.accent);
+            }
+         }
+         for (let i in data.flag.a) {
+            result[data.flag.a[i] + data.flag.e + data.name.error] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, data.lightness[mode].inverse[i], data.alpha.error);
+         }
          for (let j in data.flag.a) {
-            result[data.flag.a[j] + data.name.error + data.flag.b[i]] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, data.lightness[mode].accent[i][j], data.alpha.error);
+            result[data.flag.a[j] + data.flag.e + data.name.surface] = this.#Colors.hslObjToHex(data.hue.surface, data.saturation.surface, data.lightness[mode].inverseSurface[j], data.alpha.surface);
          }
-      }
-      for (let j in data.flag.f) {
-         for (let k in data.flag.a) {
-            result[data.flag.a[k] + data.flag.f[j] + data.name.error] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, data.lightness[mode].accentLD[j][k], data.alpha.error);
+         for (let i in data.flag.a) {
+            result[data.flag.a[i] + data.name.background] = this.#Colors.hslObjToHex(data.hue.background, data.saturation.background, data.lightness[mode].background[i], data.alpha.background);
          }
-      }
-      for (let i in data.name.accent) {
-         for (let j in data.flag.a) {
-            result[data.flag.a[j] + data.flag.e + data.name.accent[i]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, data.lightness[mode].inverse[j], data.alpha.accent);
+         for (let i in data.flag.c) {
+            for (let j in data.flag.a) {
+               result[data.flag.a[j] + data.name.surface + data.flag.c[i]] = this.#Colors.hslObjToHex(data.hue.surface, data.saturation.surface, data.lightness[mode].surface[i][j], data.alpha.surface);
+            }
          }
-      }
-      for (let i in data.flag.a) {
-         result[data.flag.a[i] + data.flag.e + data.name.error] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, data.lightness[mode].inverse[i], data.alpha.error);
-      }
-      for (let j in data.flag.a) {
-         result[data.flag.a[j] + data.flag.e + data.name.surface] = this.#Colors.hslObjToHex(data.hue.surface, data.saturation.surface, data.lightness[mode].inverseSurface[j], data.alpha.surface);
-      }
-      for (let i in data.flag.a) {
-         result[data.flag.a[i] + data.name.background] = this.#Colors.hslObjToHex(data.hue.background, data.saturation.background, data.lightness[mode].background[i], data.alpha.background);
-      }
-      for (let i in data.flag.c) {
-         for (let j in data.flag.a) {
-            result[data.flag.a[j] + data.name.surface + data.flag.c[i]] = this.#Colors.hslObjToHex(data.hue.surface, data.saturation.surface, data.lightness[mode].surface[i][j], data.alpha.surface);
+         for (let i in data.flag.d) {
+            result[data.name.outline + data.flag.d[i]] = this.#Colors.hslObjToHex(data.hue.outline, data.saturation.outline[i], data.lightness[mode].outline[i], data.alpha.outline);
          }
-      }
-      for (let i in data.flag.d) {
-         result[data.name.outline + data.flag.d[i]] = this.#Colors.hslObjToHex(data.hue.outline, data.saturation.outline[i], data.lightness[mode].outline[i], data.alpha.outline);
-      }
-      for (let i in root.customColor) {
-         let limit = Object.keys(result);
-         let allowed = ['primary', 'secondary', 'tertiary', 'quaternary', 'error'];
-         if (limit.includes(i) == false || allowed.includes(i)) {
-            data.name.custom.push(i);
-            data.hue.custom.push(this.#Colors.toHslObj(root.customColor[i]).h);
-            data.saturation.custom.push(this.#Colors.toHslObj(root.customColor[i]).s);
-            data.alpha.custom.push(this.#Colors.toHslObj(root.customColor[i]).a);
-         } else {
-            if (root == this.#settings) {
-               this.log['customColor'] = false;
+         for (let i in root.customColors) {
+            let limit = Object.keys(result);
+            let allowed = ['primary', 'secondary', 'tertiary', 'quaternary', 'error'];
+            if (limit.includes(i) == false || allowed.includes(i)) {
+               data.name.custom.push(i);
+               data.hue.custom.push(this.#Colors.toHslObj(root.customColors[i]).h);
+               data.saturation.custom.push(this.#Colors.toHslObj(root.customColors[i]).s);
+               data.alpha.custom.push(this.#Colors.toHslObj(root.customColors[i]).a);
             } else {
-               this.log['customRoot'][root.root]['customColor'] = false;
+               if (root == this) {
+                  // error
+               } else {
+                  // error for custom root
+               }
             }
-         }
-      }
-      for (let i in data.name.custom) {
-         for (let j in data.flag.b) {
-            for (let k in data.flag.a) {
-               result[data.flag.a[k] + data.name.custom[i] + data.flag.b[j]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], data.lightness[mode].accent[j][k], data.alpha.custom[i]);
-            }
-         }
-         for (let j in data.flag.f) {
-            for (let k in data.flag.a) {
-               result[data.flag.a[k] + data.flag.f[j] + data.name.custom[i]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom, data.lightness[mode].accentLD[j][k], data.alpha.custom);
-            }
-         }
-      }
-      for (let i in data.name.custom) {
-         for (let j in data.flag.a) {
-            result[data.flag.a[j] + data.flag.e + data.name.custom[i]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], data.lightness[mode].inverse[j], data.alpha.custom[i]);
-         }
-      }
-      return result;
-   }
-   #subPalette(root = this.#settings) {
-      let { h, s } = this.#Colors.toHslObj(root.color);
-      let accentName = ['primary', 'secondary', 'tertiary', 'quaternary'];
-      let ah = this.#accentHue();
-      let hueArr = ah.map(i => i + h > 360 ? i + h - 360 : i + h);
-      let sh, ss
-      if (this.#Colors.test(root.surfaceColor)) {
-         sh = this.#Colors.toHslObj(root.surfaceColor).h;
-         ss = this.#Colors.toHslObj(root.surfaceColor).s;
-      } else {
-         ss = s;
-         switch (root.surfaceColor) {
-            case 'primary':
-               sh = h;
-               break;
-            case 'secondary':
-               if (hueArr.length > 1) sh = hueArr[1];
-               break;
-            case 'tertiary':
-               if (hueArr.length > 2) sh = hueArr[2];
-               break;
-            case 'quaternary':
-               if (hueArr.length > 3) sh = hueArr[3];
-               break;
-            default:
-               sh = h;
-         }
-      }
-      let mode = root.darkmode;
-      let result = {};
-      let data = {
-         name: {
-            accent: accentName.slice(0, ah.length),
-            error: 'error',
-            custom: [],
-            neutral: ['neutral', 'neutral-variant']
-         },
-         hue: {
-            accent: hueArr,
-            error: 0,
-            custom: [],
-            neutral: sh
-         },
-         saturation: {
-            accent: s,
-            error: 100,
-            custom: [],
-            neutral: [ss / 4, ss / 2]
-         },
-         alpha: {
-            accent: 1,
-            error: 1,
-            custom: [],
-            neutral: 1
-         }
-      };
-      for (let i in root.customColor) {
-         data.name.custom.push(i);
-         data.hue.custom.push(this.#Colors.toHslObj(root.customColor[i]).h);
-         data.saturation.custom.push(this.#Colors.toHslObj(root.customColor[i]).s);
-         data.alpha.custom.push(this.#Colors.toHslObj(root.customColor[i]).a);
-      }
-      if (!root.reverseSubPalette || !mode) {
-         for (let i in data.name.accent) {
-            for (let j in root.parts) {
-               result[data.name.accent[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, root.parts[j], data.alpha.accent);
-            }
-         }
-         for (let i in root.parts) {
-            result[data.name.error + '-' + root.parts[i]] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, root.parts[i], data.alpha.error);
          }
          for (let i in data.name.custom) {
-            for (let j in root.parts) {
-               result[data.name.custom[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], root.parts[j], data.alpha.custom[i]);
+            for (let j in data.flag.b) {
+               for (let k in data.flag.a) {
+                  result[data.flag.a[k] + data.name.custom[i] + data.flag.b[j]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], data.lightness[mode].accent[j][k], data.alpha.custom[i]);
+               }
             }
-         }
-         for (let i in data.name.neutral) {
-            for (let j in root.parts) {
-               result[data.name.neutral[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.neutral, data.saturation.neutral[i], root.parts[j], data.alpha.neutral);
+            for (let j in data.flag.f) {
+               for (let k in data.flag.a) {
+                  result[data.flag.a[k] + data.flag.f[j] + data.name.custom[i]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom, data.lightness[mode].accentLD[j][k], data.alpha.custom);
+               }
             }
-         }
-      } else if (mode) {
-         for (let i in data.name.accent) {
-            for (let j in root.parts) {
-               result[data.name.accent[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, root.parts[root.parts.length - 1] - root.parts[j], data.alpha.accent[i]);
-            }
-         }
-         for (let i in root.parts) {
-            result[data.name.error + '-' + root.parts[i]] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, root.parts[root.parts.length - 1] - root.parts[i], data.alpha.error);
          }
          for (let i in data.name.custom) {
-            for (let j in root.parts) {
-               result[data.name.custom[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], root.parts[root.parts.length - 1] - root.parts[j], data.alpha.custom[i]);
+            for (let j in data.flag.a) {
+               result[data.flag.a[j] + data.flag.e + data.name.custom[i]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], data.lightness[mode].inverse[j], data.alpha.custom[i]);
             }
          }
-         for (let i in data.name.neutral) {
-            for (let j in root.parts) {
-               result[data.name.neutral[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.neutral, data.saturation.neutral[i], root.parts[root.parts.length - 1] - root.parts[j], data.alpha.neutral);
+         return result;
+      }
+      #subPalette(root) {
+         let { h, s } = this.#Colors.toHslObj(root.color);
+         let accentName = ['primary', 'secondary', 'tertiary', 'quaternary'];
+         let ah = this.#accentHue(root.root);
+         let hueArr = ah.map(i => i + h > 360 ? i + h - 360 : i + h);
+         let sh, ss
+         if (this.#Colors.test(root.surfaceColor)) {
+            sh = this.#Colors.toHslObj(root.surfaceColor).h;
+            ss = this.#Colors.toHslObj(root.surfaceColor).s;
+         } else {
+            ss = s;
+            switch (root.surfaceColor) {
+               case 'primary':
+                  sh = h;
+                  break;
+               case 'secondary':
+                  if (hueArr.length > 1) sh = hueArr[1];
+                  break;
+               case 'tertiary':
+                  if (hueArr.length > 2) sh = hueArr[2];
+                  break;
+               case 'quaternary':
+                  if (hueArr.length > 3) sh = hueArr[3];
+                  break;
+               default:
+                  sh = h;
             }
          }
-      }
-      return result;
-   }
-   #code(obj, root = this.#settings) {
-      let keys = Object.keys(obj);
-      let values = Object.values(obj);
-      let code = `\n${root.root} {\n`;
-      let prefix = (root.prefix == '') ? '' : root.prefix + '-';
-      for (let i in keys) {
-         code += `   --${prefix}${keys[i]}: ${values[i]};\n`;
-      }
-      code += '}';
-      return code;
-   }
-   #sprout() {
-      let CSS = document.querySelector('MUSHROOM');
-      if (!CSS) {
-         CSS = document.createElement('style');
-         CSS.id = 'MUSHROOM';
-         let head = document.querySelector('head');
-         head.appendChild(CSS);
-      }
-      let code = `/**** Mushroom v${this.version} ****/`;
-      for (let i in arguments) {
-         code += '\n' + arguments[i];
-      }
-      CSS.innerHTML = code;
-      return code;
-   }
-   #grow() {
-      this.#getDarkmode();
-      for (let i in this.#customRootsSettings) {
-         this.#getDarkmode(this.#customRootsSettings[i]);
-      }
-      let palette = this.#settings.hasPalette ? this.#palette() : undefined;
-      let subPalette = this.#settings.hasSubPalette ? this.#subPalette() : undefined;
-      let code = '';
-      if (palette && subPalette) {
-         code += this.#code(palette);
-         code += this.#code(subPalette);
-      } else if (palette) {
-         code = this.#code(palette);
-      } else if (subPalette) {
-         code = this.#code(subPalette);
-      }
-      this.#settings.code = code;
-      let arrID = Object.keys(this.#customRootsSettings);
-      if (arrID.length != 0) {
-         for (let j of arrID) {
-            this.#getDarkmode(this.#customRootsSettings[j]);
-            let customCode = '';
-            let customPalette = this.#customRootsSettings[j].hasPalette ? this.#palette(this.#customRootsSettings[j]) : undefined;
-            let customSubPalette = this.#customRootsSettings[j].hasSubPalette ? this.#subPalette(this.#customRootsSettings[j]) : undefined;
-            if (customPalette && customSubPalette) {
-               customCode += this.#code(customPalette, this.#customRootsSettings[j]);
-               customCode += this.#code(customSubPalette, this.#customRootsSettings[j]);
-            } else if (customPalette) {
-               customCode = this.#code(customPalette, this.#customRootsSettings[j]);
-            } else if (customSubPalette) {
-               customCode = this.#code(customSubPalette, this.#customRootsSettings[j]);
+         let mode = this.#getTheme(root.root).toLowerCase();
+         let result = {};
+         let data = {
+            name: {
+               accent: accentName.slice(0, ah.length),
+               error: 'error',
+               custom: [],
+               neutral: ['neutral', 'neutral-variant']
+            },
+            hue: {
+               accent: hueArr,
+               error: 0,
+               custom: [],
+               neutral: sh
+            },
+            saturation: {
+               accent: s,
+               error: 100,
+               custom: [],
+               neutral: [ss / 4, ss / 2]
+            },
+            alpha: {
+               accent: 1,
+               error: 1,
+               custom: [],
+               neutral: 1
             }
-            this.#customRootsSettings[j].palette = customPalette;
-            this.#customRootsSettings[j].subPalette = customSubPalette;
-            this.#customRootsSettings[j].hue = this.#Colors.toHslObj(this.#customRootsSettings[j].color).h;
-            this.#customRootsSettings[j].saturation = this.#Colors.toHslObj(this.#customRootsSettings[j].color).s;
-            this.#customRootsSettings[j].lightness = this.#Colors.toHslObj(this.#customRootsSettings[j].color).l;
-            this.#customRootsSettings[j].code = customCode;
-            code += customCode;
+         };
+         for (let i in root.customColors) {
+            data.name.custom.push(i);
+            data.hue.custom.push(this.#Colors.toHslObj(root.customColors[i]).h);
+            data.saturation.custom.push(this.#Colors.toHslObj(root.customColors[i]).s);
+            data.alpha.custom.push(this.#Colors.toHslObj(root.customColors[i]).a);
+         }
+         if (!root.reverseSubPalette || !mode) {
+            for (let i in data.name.accent) {
+               for (let j in root.parts) {
+                  result[data.name.accent[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, root.parts[j], data.alpha.accent);
+               }
+            }
+            for (let i in root.parts) {
+               result[data.name.error + '-' + root.parts[i]] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, root.parts[i], data.alpha.error);
+            }
+            for (let i in data.name.custom) {
+               for (let j in root.parts) {
+                  result[data.name.custom[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], root.parts[j], data.alpha.custom[i]);
+               }
+            }
+            for (let i in data.name.neutral) {
+               for (let j in root.parts) {
+                  result[data.name.neutral[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.neutral, data.saturation.neutral[i], root.parts[j], data.alpha.neutral);
+               }
+            }
+         } else if (mode) {
+            for (let i in data.name.accent) {
+               for (let j in root.parts) {
+                  result[data.name.accent[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, root.parts[root.parts.length - 1] - root.parts[j], data.alpha.accent[i]);
+               }
+            }
+            for (let i in root.parts) {
+               result[data.name.error + '-' + root.parts[i]] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, root.parts[root.parts.length - 1] - root.parts[i], data.alpha.error);
+            }
+            for (let i in data.name.custom) {
+               for (let j in root.parts) {
+                  result[data.name.custom[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], root.parts[root.parts.length - 1] - root.parts[j], data.alpha.custom[i]);
+               }
+            }
+            for (let i in data.name.neutral) {
+               for (let j in root.parts) {
+                  result[data.name.neutral[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.neutral, data.saturation.neutral[i], root.parts[root.parts.length - 1] - root.parts[j], data.alpha.neutral);
+               }
+            }
+         }
+         return result;
+      }
+      #code(obj, root) {
+         let keys = Object.keys(obj);
+         let values = Object.values(obj);
+         let code = `\n${root.root} {\n`;
+         let prefix = (root.prefix == '') ? '' : root.prefix + '-';
+         for (let i in keys) {
+            code += `   --${prefix}${keys[i]}: ${values[i]};\n`;
+         }
+         code += '}';
+         return code;
+      }
+      #sprout() {
+         let CSS = document.querySelector('#MUSHROOM');
+         if (!CSS) {
+            CSS = document.createElement('style');
+            CSS.id = 'MUSHROOM';
+            let head = document.querySelector('head');
+            head.appendChild(CSS);
+         }
+         let code = `/**** Mushroom v${this.version} ****/`;
+         for (let i in arguments) {
+            code += '\n' + arguments[i];
+         }
+         CSS.innerHTML = code;
+         return code;
+      }
+      #grow() {
+         let code = '';
+         for (let root in this.#roots) {
+            this.#roots[root].palette = this.#palette(this.#roots[root]);
+            this.#roots[root].subPalette = this.#subPalette(this.#roots[root]);
+         }
+         for (let root in this.#roots) {
+            if (this.#roots[root].sprout) {
+               code += this.#code(this.#roots[root].palette, this.#roots[root]);
+               code += this.#code(this.#roots[root].subPalette, this.#roots[root]);
+            }
+         }
+         if (code != '') {
+            this.code = this.#sprout(code);
          }
       }
-      if ((this.#settings.sprout) && (code !== '') && (palette || subPalette)) {
-         this.#sprout(code)
-      }
-      this.palette = palette;
-      this.subPalette = subPalette;
-      this.code = code;
-      this.darkmode = this.#settings.darkmode;
-      this.hue = this.#Colors.toHslObj(this.#settings.color).h;
-      this.saturation = this.#Colors.toHslObj(this.#settings.color).s;
-      this.lightness = this.#Colors.toHslObj(this.#settings.color).l;
-      this.sprout = this.#settings.sprout;
-      this.root = this.#settings.root;
-      this.color = this.#settings.color;
-      this.theme = this.#settings.theme;
-      this.parts = this.#settings.parts;
-      this.prefix = this.#settings.prefix;
-      this.contrast = this.#settings.contrast;
-      this.colorScheme = this.#settings.colorScheme;
-      this.hasPalette = this.#settings.hasPalette;
-      this.hasSubPalette = this.#settings.hasSubPalette;
-      this.reverseSubPalette = this.#settings.reverseSubPalette;
-      this.customColor = this.#settings.customColor;
-      this.customRoots = this.#customRootsSettings;
-      this.growTime = Number((performance.now() - this.#startTime).toFixed(1)) / 1000;
-      let renderEvent = new CustomEvent('render', {});
-      this.#virtualElement.dispatchEvent(renderEvent);
    }
-}
+   window.Mushroom = Mushroom;
+})();
