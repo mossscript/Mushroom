@@ -2836,13 +2836,11 @@
    }
    class Mushroom {
       // private variable 
-      #Colors;
-      #Validation;
-      #eventTarget;
-      #clearConsole;
-      #configs;
-      #roots;
-      #PCS;
+      #Colors; #Validation;
+      #eventTarget; #clearConsole;
+      #configs; #roots; #PCS;
+      
+      // constructor
       constructor(configs) {
          this.version = "5.1";
          this.#Colors = new Colors();
@@ -2874,7 +2872,6 @@
             if (this.#Validation.sprout(configs.clearConsole)) {
                this.#clearConsole = configs.clearConsole;
             } else {
-               if (this.palette == undefined) this.#grow();
                this.#errorLib(10, configs.clearConsole);
             }
          }
@@ -2883,10 +2880,11 @@
                this.#grow();
             }
          }
-         if (this.palette == undefined) this.#grow();
+         this.#grow();
 
          this.#info(`Mushroom ${this.version}`)
       }
+      
       // events
       set ongrow(callback) {
          this.#eventTarget.addEventListener('grow', callback)
@@ -2900,7 +2898,7 @@
       get onerror() {
          return undefined;
       }
-      
+
       // setter & getter 
       set color(val) {
          this.setColor(val);
@@ -3611,9 +3609,6 @@
                if (log[i]) {
                   this.#configs[i] = configs[i];
                } else {
-                  if (this.palette == undefined) {
-                     this.#grow();
-                  }
                   this[i] = configs[i];
                }
             }
@@ -3663,6 +3658,7 @@
       }
       #error(message) {
          if (!this.#clearConsole) {
+            if (this.palette == undefined) this.#grow();
             console.log(
                `%cMushroom Error:%c\n %c${message}`,
                `background: ${this.palette['error']}; color: ${this.palette['on-error']}; font-weight: 900; padding: 4px; border-radius: 8px`,
@@ -3690,7 +3686,7 @@
             15: `Not found: No root exists with the name "${wrong}".`,
          }
          this.#error(lib[key]);
-         let event = new CustomEvent('error', { detail: { key, wrong } });
+         let event = new CustomEvent('error', { detail: { key, wrong: lib[key] } });
          this.#eventTarget.dispatchEvent(event);
       }
       #getDarkmode(root = this.#configs.root) {
@@ -4075,7 +4071,6 @@
             code += this.#code(this.#roots[root].palette, this.#roots[root]);
             code += this.#code(this.#roots[root].subPalette, this.#roots[root]);
          }
-
          for (var root in this.#roots) {
             if (this.#roots[root].sprout && code != '') {
                this.#sprout(code);
