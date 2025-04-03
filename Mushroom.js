@@ -2838,6 +2838,8 @@
       // private variable 
       #Colors;
       #Validation;
+      #eventTarget;
+      #clearConsole;
       #configs;
       #roots;
       #PCS;
@@ -2845,6 +2847,8 @@
          this.version = "5.1";
          this.#Colors = new Colors();
          this.#Validation = new Validation();
+         this.#eventTarget = new EventTarget();
+         this.#clearConsole = false;
          this.#PCS = window.matchMedia("(prefers-color-scheme:dark)");
          this.#configs = {
             sprout: true,
@@ -3594,6 +3598,7 @@
                if (this.#Validation.root(root)) {
                   this.#roots[root] = {};
                   Object.assign(this.#roots[root], this.#configs);
+                  this.#roots[root].root = root
                   let log = this.#Validation.log(configs.customRoots[root]);
                   for (let i in log) {
                      if (log[i]) {
@@ -3614,26 +3619,30 @@
          this.#grow();
       }
       #error(message) {
-         console.log(
-            `%cMushroom Error:%c\n %c${message}`,
-            `background: ${this.palette['error']}; color: ${this.palette['on-error']}; font-weight: 900; padding: 4px; border-radius: 8px`,
-            '',
-            `background: ${this.palette['error-container']}; color: ${this.palette['on-error-container']}; font-weight: 400; padding: 4px; border-radius: 8px; font-family: sreif; font-size: 13px;`
-         )
+         if (!this.#clearConsole) {
+            console.log(
+               `%cMushroom Error:%c\n %c${message}`,
+               `background: ${this.palette['error']}; color: ${this.palette['on-error']}; font-weight: 900; padding: 4px; border-radius: 8px`,
+               '',
+               `background: ${this.palette['error-container']}; color: ${this.palette['on-error-container']}; font-weight: 400; padding: 4px; border-radius: 8px; font-family: sreif; font-size: 13px;`
+            )
+         }
       }
       #info(title, message) {
-         if (message != undefined) {
-            console.log(
-               `%c${title}%c\n %c${message}`,
-               `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px`,
-               '',
-               `background: ${this.palette['primary-container']}; color: ${this.palette['on-primary-container']}; font-weight: 400; padding: 4px; border-radius: 8px; font-family: sreif; font-size: 13px;`
-            )
-         } else {
-            console.log(
-               `%c${title}`,
-               `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px`
-            )
+         if (!this.#clearConsole) {
+            if (message != undefined) {
+               console.log(
+                  `%c${title}%c\n %c${message}`,
+                  `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px`,
+                  '',
+                  `background: ${this.palette['primary-container']}; color: ${this.palette['on-primary-container']}; font-weight: 400; padding: 4px; border-radius: 8px; font-family: sreif; font-size: 13px;`
+               )
+            } else {
+               console.log(
+                  `%c${title}`,
+                  `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px`
+               )
+            }
          }
       }
       #errorLib(key, wrong) {
@@ -3654,7 +3663,9 @@
             14: `Invalid input: The name "${wrong}" is already assigned to a root.`,
             15: `Not found: No root exists with the name "${wrong}".`,
          }
-         this.#error(lib[key])
+         this.#error(lib[key]);
+         let event = new CustomEvent('error', { detail: { key, wrong } });
+         this.#eventTarget.dispatchEvent(event);
       }
       #getDarkmode(root = this.#configs.root) {
          if (this.theme == 'auto') {
@@ -4035,14 +4046,18 @@
             this.#roots[root].subPalette = this.#subPalette(this.#roots[root]);
          }
          for (let root in this.#roots) {
-            if (this.#roots[root].sprout) {
-               code += this.#code(this.#roots[root].palette, this.#roots[root]);
-               code += this.#code(this.#roots[root].subPalette, this.#roots[root]);
+            code += this.#code(this.#roots[root].palette, this.#roots[root]);
+            code += this.#code(this.#roots[root].subPalette, this.#roots[root]);
+         }
+
+         for (var root in this.#roots) {
+            if (this.#roots[root].sprout && code != '') {
+               this.#sprout(code);
             }
          }
-         if (code != '') {
-            this.code = this.#sprout(code);
-         }
+         this.code = code
+         let event = new CustomEvent('grow', {});
+         this.#eventTarget.dispatchEvent(event);
       }
    }
    window.Mushroom = Mushroom;
