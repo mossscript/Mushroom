@@ -3595,6 +3595,7 @@
                   this[i] = configs[i];
                }
             }
+            this.#roots[this.#configs.root] = this.#configs;
          }
          if (configs && configs.customRoots) {
             for (let root in configs.customRoots) {
