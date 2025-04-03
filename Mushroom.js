@@ -2867,9 +2867,16 @@
          };
          this.#roots = {};
          this.#roots[this.#configs.root] = this.#configs;
-         
+
          this.#setUp(configs);
 
+         if (configs) {
+            if (this.#Validation.sprout(configs.clearConsole)) {
+               this.#clearConsole = configs.clearConsole;
+            } else {
+               this.#errorLib(10, configs.clearConsole);
+            }
+         }
          this.#PCS.onchange = () => {
             if (this.theme == 'auto') {
                this.#grow();
