@@ -2887,6 +2887,20 @@
 
          this.#info(`Mushroom ${this.version}`)
       }
+      // events
+      set ongrow(callback) {
+         this.#eventTarget.addEventListener('grow', callback)
+      }
+      get ongrow() {
+         return undefined;
+      }
+      set onerror(callback) {
+         this.#eventTarget.addEventListener('error', callback)
+      }
+      get onerror() {
+         return undefined;
+      }
+      
       // setter & getter 
       set color(val) {
          this.setColor(val);
@@ -3630,16 +3644,6 @@
          this.#roots[root][key] = val;
          this.#grow();
       }
-      #error(message) {
-         if (!this.#clearConsole) {
-            console.log(
-               `%cMushroom Error:%c\n %c${message}`,
-               `background: ${this.palette['error']}; color: ${this.palette['on-error']}; font-weight: 900; padding: 4px; border-radius: 8px`,
-               '',
-               `background: ${this.palette['error-container']}; color: ${this.palette['on-error-container']}; font-weight: 400; padding: 4px; border-radius: 8px; font-family: sreif; font-size: 13px;`
-            )
-         }
-      }
       #info(title, message) {
          if (!this.#clearConsole) {
             if (message != undefined) {
@@ -3655,6 +3659,16 @@
                   `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px`
                )
             }
+         }
+      }
+      #error(message) {
+         if (!this.#clearConsole) {
+            console.log(
+               `%cMushroom Error:%c\n %c${message}`,
+               `background: ${this.palette['error']}; color: ${this.palette['on-error']}; font-weight: 900; padding: 4px; border-radius: 8px`,
+               '',
+               `background: ${this.palette['error-container']}; color: ${this.palette['on-error-container']}; font-weight: 400; padding: 4px; border-radius: 8px; font-family: sreif; font-size: 13px;`
+            )
          }
       }
       #errorLib(key, wrong) {
