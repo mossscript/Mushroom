@@ -2874,6 +2874,7 @@
             if (this.#Validation.sprout(configs.clearConsole)) {
                this.#clearConsole = configs.clearConsole;
             } else {
+               if (this.palette == undefined) this.#grow();
                this.#errorLib(10, configs.clearConsole);
             }
          }
