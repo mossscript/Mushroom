@@ -2888,10 +2888,7 @@
       // events
       set ongrow(callback) {
          this.#eventTarget.addEventListener('grow', callback);
-
-         if (this.#hasGrown) {
-            this.#eventTarget.dispatchEvent(new Event("grow"));
-         }
+         if (this.#hasGrown) this.#eventTarget.dispatchEvent(new Event("grow"));
       }
       get ongrow() {
          return undefined;
