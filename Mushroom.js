@@ -2882,7 +2882,7 @@
             }
          }
          this.#grow();
-         this.ongrow = () => this.#info(`Mushroom ${this.version}`);
+         this.#info(`Mushroom ${this.version}`);
       }
 
       // events
