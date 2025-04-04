@@ -2838,8 +2838,9 @@
       // private variable 
       #Colors; #Validation;
       #eventTarget; #clearConsole;
-      #configs; #roots; #PCS;
-      
+      #hasGrown; #configs;
+      #roots; #PCS;
+
       // constructor
       constructor(configs) {
          this.version = "5.1";
@@ -2881,13 +2882,16 @@
             }
          }
          this.#grow();
-
-         this.#info(`Mushroom ${this.version}`)
+         this.ongrow = () => this.#info(`Mushroom ${this.version}`);
       }
-      
+
       // events
       set ongrow(callback) {
-         this.#eventTarget.addEventListener('grow', callback)
+         this.#eventTarget.addEventListener('grow', callback);
+
+         if (this.#hasGrown) {
+            this.#eventTarget.dispatchEvent(new Event("grow"));
+         }
       }
       get ongrow() {
          return undefined;
@@ -4076,7 +4080,8 @@
                this.#sprout(code);
             }
          }
-         this.code = code
+         this.code = code;
+         this.#hasGrown = true;
          let event = new CustomEvent('grow', {});
          this.#eventTarget.dispatchEvent(event);
       }
