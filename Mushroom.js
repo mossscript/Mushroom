@@ -3226,6 +3226,12 @@
       getSubPalette(root = this.#configs.root) {
          return this.#roots[root].palette;
       }
+      randomColor(root = this.#configs.root) {
+         let h = Math.round(Math.random() * 360);
+         let s = Math.round(Math.random() * 100);
+         let l = Math.round(Math.random() * 100);
+         this.setColor(this.#Colors.hslObjToHex(h,s,l),root);
+      }
 
       // root
       addRoot(val, opt) {
