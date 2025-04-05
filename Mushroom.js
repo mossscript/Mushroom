@@ -3051,11 +3051,13 @@
       setTheme(val, root = this.#configs.root) {
          let valid = this.#Validation.theme(val);
          if (valid) {
-            if ((root != this.#configs.root) && (!this.#roots[root].followMainTheme)) {
+            if (root == this.#configs.root) {
                this.#setting('theme', val, root);
                for (let i in this.#roots) {
                   if (this.#roots[i].followMainTheme) this.#roots[i].theme = val;
                }
+            } else if ((root != this.#configs.root) && (!this.#roots[root].followMainTheme)) {
+               this.#setting('theme', val, root);
             } else {
                this.#errorLib(16, root);
             }
@@ -3162,6 +3164,21 @@
          let valid = this.#Validation.bool(val);
          if (valid) {
             this.#setting('theme', val ? 'dark' : 'light', root);
+         } else {
+            this.#errorLib(10, val);
+         }
+      }
+      setFollowMainTheme(val, root = this.#configs.root) {
+         let valid = this.#Validation.followMainTheme(val);
+         if (valid) {
+            if (root != this.#configs.root) {
+               this.#setting('followMainTheme', val, root);
+            } else if (root == this.#configs.root) {
+               for (let i in this.#roots) {
+                  if (this.#roots[i].followMainTheme == this.#configs.followMainTheme) this.#roots[i].followMainTheme = val;
+                  this.#setting('followMainTheme', val, root);
+               }
+            }
          } else {
             this.#errorLib(10, val);
          }
