@@ -3051,9 +3051,13 @@
       setTheme(val, root = this.#configs.root) {
          let valid = this.#Validation.theme(val);
          if (valid) {
-            this.#setting('theme', val, root);
-            for (let i in this.#roots) {
-               if (this.#roots[i].followMainTheme) this.#roots[i].theme = val;
+            if ((root != this.#configs.root) && (!this.#roots[root].followMainTheme)) {
+               this.#setting('theme', val, root);
+               for (let i in this.#roots) {
+                  if (this.#roots[i].followMainTheme) this.#roots[i].theme = val;
+               }
+            } else {
+               this.#errorLib(16, root);
             }
          } else {
             this.#errorLib(3, val);
@@ -3699,6 +3703,7 @@
             13: `Operation not allowed: "${wrong}". The main root cannot be removed.`,
             14: `Invalid input: The name "${wrong}" is already assigned to a root.`,
             15: `Not found: No root exists with the name "${wrong}".`,
+            16: `Operation not allowed: You cannot manually change the theme of root "${wrong}" because its "followMainTheme" property is set to true.`,
          }
          this.#error(lib[key]);
          let event = new CustomEvent('error', { detail: { key, wrong: lib[key] } });
