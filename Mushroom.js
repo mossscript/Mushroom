@@ -3057,16 +3057,7 @@
       setTheme(val, root = this.#configs.root) {
          let valid = this.#Validation.theme(val);
          if (valid) {
-            if (root == this.#configs.root) {
-               this.#setting('theme', val, root);
-               for (let i in this.#roots) {
-                  if (this.#roots[i].followMainTheme) this.#roots[i].theme = val;
-               }
-            } else if ((root != this.#configs.root) && (!this.#roots[root].followMainTheme)) {
-               this.#setting('theme', val, root);
-            } else {
-               this.#errorLib(16, root);
-            }
+            this.#setting('theme', val, root);
          } else {
             this.#errorLib(3, val);
          }
@@ -3230,7 +3221,7 @@
          let h = Math.round(Math.random() * 360);
          let s = Math.round(Math.random() * 100);
          let l = Math.round(Math.random() * 100);
-         this.setColor(this.#Colors.hslObjToHex(h,s,l),root);
+         this.setColor(this.#Colors.hslObjToHex(h, s, l), root);
       }
 
       // root
@@ -3681,9 +3672,13 @@
          }
       }
       #setting(key, val, root) {
-         if (this.#roots[root][key] == this.#configs[key]) {
-            this.#configs[key] = val;
+         for (let i in this.#roots) {
+            if (this.#roots[i].followMainTheme && this.#roots[i][key] == this.#configs[key] && this.#roots[i].root != this.#configs.root) {
+               this.#roots[i][key] = val;
+            }
          }
+
+         if (root == this.#configs.root) this.#configs[key] = val;
          this.#roots[root][key] = val;
          this.#grow();
       }
