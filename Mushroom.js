@@ -3030,6 +3030,12 @@
             return (this.theme == 'dark') ? true : false;
          }
       }
+      set followMainTheme(val) {
+         this.setFollowMainTheme(val);
+      }
+      get followMainTheme() {
+         return this.#configs.followMainTheme;
+      }
 
       // property 
       setColor(val, root = this.#configs.root) {
