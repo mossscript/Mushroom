@@ -2778,6 +2778,9 @@
       customColors(val) {
          return typeof val == 'object' && !Array.isArray(val) && Object.values(val).every(i => this.#color.test(i)) && Object.keys(val).every(i => /^[a-z][a-z0-9]*$/i.test(i));
       }
+      followMainTheme(val) {
+         return this.bool(val);
+      }
 
       log(obj) {
          let log = {};
@@ -2825,6 +2828,9 @@
                case 'customColors':
                   log[i] = this.customColors(obj[i]);
                   break;
+               case 'followMainTheme':
+                  log[i] = this.followMainTheme(obj[i]);
+                  break;
             }
          }
          return log;
@@ -2836,10 +2842,14 @@
    }
    class Mushroom {
       // private variable 
-      #Colors; #Validation;
-      #eventTarget; #clearConsole;
-      #hasGrown; #configs;
-      #roots; #PCS;
+      #Colors;
+      #Validation;
+      #eventTarget;
+      #clearConsole;
+      #hasGrown;
+      #configs;
+      #roots;
+      #PCS;
 
       // constructor
       constructor(configs) {
@@ -2860,6 +2870,7 @@
             colorScheme: 'Analogous',
             hasPalette: true,
             hasSubPalette: false,
+            followMainTheme: true,
             reverseSubPalette: false,
             parts: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
             customColors: {},
@@ -2869,7 +2880,7 @@
 
          this.#setUp(configs);
 
-         if (configs) {
+         if (configs.clearConsole) {
             if (this.#Validation.sprout(configs.clearConsole)) {
                this.#clearConsole = configs.clearConsole;
             } else {
@@ -3041,6 +3052,9 @@
          let valid = this.#Validation.theme(val);
          if (valid) {
             this.#setting('theme', val, root);
+            for (let i in this.#roots) {
+               if (this.#roots[i].followMainTheme) this.#roots[i].theme = val;
+            }
          } else {
             this.#errorLib(3, val);
          }
@@ -3176,7 +3190,7 @@
          this.#grow();
       }
       toggleTheme(root = this.#configs.root) {
-         this.#roots[root].theme = this.#roots[root].theme == 'light' ? 'dark' : 'light';
+         this.setTheme(this.#roots[root].theme == 'light' ? 'dark' : 'light', root)
          this.#grow();
       }
       getPalette(root = this.#configs.root) {
