@@ -3031,7 +3031,7 @@
          }
       }
 
-      // property
+      // property 
       setColor(val, root = this.#configs.root) {
          let valid = this.#Validation.color(val);
          if (valid) {
