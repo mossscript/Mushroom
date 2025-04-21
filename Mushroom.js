@@ -3208,7 +3208,7 @@
          this.#grow();
       }
       toggleTheme(root = this.#configs.root) {
-         this.setTheme(this.#roots[root].theme == 'light' ? 'dark' : 'light', root)
+         this.setTheme(this.#getDarkmode(root) ? 'light' : 'dark', root);
          this.#grow();
       }
       getPalette(root = this.#configs.root) {
