@@ -2730,7 +2730,7 @@
       string(val) {
          return typeof val == 'string';
       }
-
+      
       sprout(val) {
          return this.bool(val);
       }
@@ -2776,12 +2776,13 @@
          return Array.isArray(val) && val.every(i => typeof i == 'number' && i >= 0 && i <= 100);
       }
       customColors(val) {
-         return typeof val == 'object' && !Array.isArray(val) && Object.values(val).every(i => this.#color.test(i)) && Object.keys(val).every(i => /^[a-z][a-z0-9]*$/i.test(i));
+         return typeof val == 'object' && !Array.isArray(val) && Object.values(val).every(i => this.#color.test(i)) && Object.keys(val).every(i =>
+            /^[a-z][a-z0-9]*$/i.test(i));
       }
       followMainTheme(val) {
          return this.bool(val);
       }
-
+      
       log(obj) {
          let log = {};
          for (let i in obj) {
@@ -2850,7 +2851,7 @@
       #configs;
       #roots;
       #PCS;
-
+      
       // constructor
       constructor(configs) {
          this.version = "5.1";
@@ -2861,7 +2862,7 @@
          this.#PCS = window.matchMedia("(prefers-color-scheme:dark)");
          this.#configs = {
             sprout: true,
-            color: 'Royal Blue',
+            color: 'Medium Red Violet',
             surfaceColor: 'primary',
             root: ':root',
             prefix: '',
@@ -2877,9 +2878,9 @@
          };
          this.#roots = {};
          this.#roots[this.#configs.root] = this.#configs;
-
+         
          this.#setUp(configs);
-
+         
          if (configs.clearConsole) {
             if (this.#Validation.sprout(configs.clearConsole)) {
                this.#clearConsole = configs.clearConsole;
@@ -2895,7 +2896,7 @@
          this.#grow();
          this.#info(`Mushroom ${this.version}`);
       }
-
+      
       // events
       set ongrow(callback) {
          this.#eventTarget.addEventListener('grow', callback);
@@ -2910,7 +2911,7 @@
       get onerror() {
          return undefined;
       }
-
+      
       // setter & getter 
       set color(val) {
          this.setColor(val);
@@ -3036,7 +3037,7 @@
       get followMainTheme() {
          return this.#configs.followMainTheme;
       }
-
+      
       // property 
       setColor(val, root = this.#configs.root) {
          let valid = this.#Validation.color(val);
@@ -3064,6 +3065,7 @@
       }
       setColorScheme(val, root = this.#configs.root) {
          let valid = this.#Validation.colorScheme(val);
+         console.log(valid, val)
          if (valid) {
             this.#setting('colorScheme', val, root);
          } else {
@@ -3223,7 +3225,7 @@
          let l = Math.round(Math.random() * 100);
          this.setColor(this.#Colors.hslObjToHex(h, s, l), root);
       }
-
+      
       // root
       addRoot(val, opt) {
          if (Object.keys(this.#roots).includes(val)) {
@@ -3273,7 +3275,7 @@
       }
       setRoot(val, root = this.#configs.root) {
          this.renameRoot(root, val);
-
+         
       }
       roots(root) {
          console.log(this.#roots[root].palette)
@@ -3293,14 +3295,14 @@
       getAllRoots() {
          return this.#roots;
       }
-
+      
       // class
       #Root = class {
          // private variable 
          #Colors;
          #Validation;
          #eventTarget
-
+         
          // constructor
          constructor(configs) {
             this.configs = configs;
@@ -3308,7 +3310,7 @@
             this.#Validation = new Validation();
             this.#eventTarget = new EventTarget();
          }
-
+         
          // event 
          set onerror(callback) {
             this.#eventTarget.addEventListener('error', callback)
@@ -3322,7 +3324,7 @@
          get onsuccess() {
             return undefined;
          }
-
+         
          // getter & setter
          set color(val) {
             this.setColor(val);
@@ -3442,7 +3444,7 @@
                return (this.theme == 'dark') ? true : false;
             }
          }
-
+         
          // property 
          setColor(val) {
             let valid = this.#Validation.color(val);
@@ -3628,7 +3630,7 @@
             this.configs.theme = this.configs.theme == 'light' ? 'dark' : 'light';
             this.#success();
          }
-
+         
          // event handler 
          #success() {
             let event = new CustomEvent('success', {});
@@ -3639,7 +3641,7 @@
             this.#eventTarget.dispatchEvent(event);
          }
       }
-
+      
       // private property
       #setUp(configs) {
          if (configs) {
@@ -3677,7 +3679,7 @@
                this.#roots[i][key] = val;
             }
          }
-
+         
          if (root == this.#configs.root) this.#configs[key] = val;
          this.#roots[root][key] = val;
          this.#grow();
@@ -3838,45 +3840,45 @@
             lightness: {
                light: {
                   accent: [
-                  [35, 100],
-                  [80 + l / 10, 20 - l / 10]
-               ],
+                     [35, 100],
+                     [80 + l / 10, 20 - l / 10]
+                  ],
                   accentLD: [
-                  [45, 100],
-                  [25, 100]
-               ],
+                     [45, 100],
+                     [25, 100]
+                  ],
                   surface: [
-                  [87 + sl / 10, 30 - sl / 10],
-                  [85 + sl / 10, 30 - sl / 10],
-                  [83 + sl / 10, 30 - sl / 10],
-                  [80 + sl / 10, 30 - sl / 10],
-                  [78 + sl / 10, 30 - sl / 10]
-               ],
+                     [87 + sl / 10, 30 - sl / 10],
+                     [85 + sl / 10, 30 - sl / 10],
+                     [83 + sl / 10, 30 - sl / 10],
+                     [80 + sl / 10, 30 - sl / 10],
+                     [78 + sl / 10, 30 - sl / 10]
+                  ],
                   background: [90 + sl / 10, 20 - sl / 10],
                   outline: [60, 80],
                   inverse: [70, 10],
-                  inverseSurface: [15 + sl / 10, 80 - sl / 10]
+                  inverseSurface: [15 - sl / 10, 65 + sl / 10]
                },
                dark: {
                   accent: [
-                  [70, 10],
-                  [20 - l / 10, 70 + l / 10]
-               ],
+                     [70, 10],
+                     [20 - l / 10, 70 + l / 10]
+                  ],
                   accentLD: [
-                  [80, 10],
-                  [60, 10]
-               ],
+                     [80, 10],
+                     [60, 10]
+                  ],
                   surface: [
-                  [15 - sl / 10, 65 + sl / 10],
-                  [17 - sl / 10, 65 + sl / 10],
-                  [19 - sl / 10, 65 + sl / 10],
-                  [21 - sl / 10, 65 + sl / 10],
-                  [30 - sl / 10, 65 + sl / 10]
-               ],
+                     [15 - sl / 10, 65 + sl / 10],
+                     [17 - sl / 10, 65 + sl / 10],
+                     [19 - sl / 10, 65 + sl / 10],
+                     [21 - sl / 10, 65 + sl / 10],
+                     [30 - sl / 10, 65 + sl / 10]
+                  ],
                   background: [10 - sl / 10, 70 + sl / 10],
                   outline: [40, 20],
                   inverse: [35, 100],
-                  inverseSurface: [85 - sl / 10, 25 + sl / 10]
+                  inverseSurface: [87 + sl / 10, 30 - sl / 10]
                },
             },
             alpha: {
@@ -3900,46 +3902,56 @@
          for (let i in data.name.accent) {
             for (let j in data.flag.b) {
                for (let k in data.flag.a) {
-                  result[data.flag.a[k] + data.name.accent[i] + data.flag.b[j]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, data.lightness[mode].accent[j][k], data.alpha.accent);
+                  result[data.flag.a[k] + data.name.accent[i] + data.flag.b[j]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent,
+                     data.lightness[mode].accent[j][k], data.alpha.accent);
                }
             }
             for (let j in data.flag.f) {
                for (let k in data.flag.a) {
-                  result[data.flag.a[k] + data.flag.f[j] + data.name.accent[i]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, data.lightness[mode].accentLD[j][k], data.alpha.accent);
+                  result[data.flag.a[k] + data.flag.f[j] + data.name.accent[i]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent,
+                     data.lightness[mode].accentLD[j][k], data.alpha.accent);
                }
             }
          }
          for (let i in data.flag.b) {
             for (let j in data.flag.a) {
-               result[data.flag.a[j] + data.name.error + data.flag.b[i]] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, data.lightness[mode].accent[i][j], data.alpha.error);
+               result[data.flag.a[j] + data.name.error + data.flag.b[i]] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, data.lightness[
+                  mode].accent[i][j], data.alpha.error);
             }
          }
          for (let j in data.flag.f) {
             for (let k in data.flag.a) {
-               result[data.flag.a[k] + data.flag.f[j] + data.name.error] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, data.lightness[mode].accentLD[j][k], data.alpha.error);
+               result[data.flag.a[k] + data.flag.f[j] + data.name.error] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, data.lightness[
+                  mode].accentLD[j][k], data.alpha.error);
             }
          }
          for (let i in data.name.accent) {
             for (let j in data.flag.a) {
-               result[data.flag.a[j] + data.flag.e + data.name.accent[i]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, data.lightness[mode].inverse[j], data.alpha.accent);
+               result[data.flag.a[j] + data.flag.e + data.name.accent[i]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, data
+                  .lightness[mode].inverse[j], data.alpha.accent);
             }
          }
          for (let i in data.flag.a) {
-            result[data.flag.a[i] + data.flag.e + data.name.error] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, data.lightness[mode].inverse[i], data.alpha.error);
+            result[data.flag.a[i] + data.flag.e + data.name.error] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, data.lightness[mode]
+               .inverse[i], data.alpha.error);
          }
          for (let j in data.flag.a) {
-            result[data.flag.a[j] + data.flag.e + data.name.surface] = this.#Colors.hslObjToHex(data.hue.surface, data.saturation.surface, data.lightness[mode].inverseSurface[j], data.alpha.surface);
+            result[data.flag.a[j] + data.flag.e + data.name.surface] = this.#Colors.hslObjToHex(data.hue.surface, data.saturation.surface, data.lightness[
+               mode].inverseSurface[j], data.alpha.surface);
          }
          for (let i in data.flag.a) {
-            result[data.flag.a[i] + data.name.background] = this.#Colors.hslObjToHex(data.hue.background, data.saturation.background, data.lightness[mode].background[i], data.alpha.background);
+            result[data.flag.a[i] + data.name.background] = this.#Colors.hslObjToHex(data.hue.background, data.saturation.background, data.lightness[mode]
+               .background[i], data.alpha.background);
          }
          for (let i in data.flag.c) {
             for (let j in data.flag.a) {
-               result[data.flag.a[j] + data.name.surface + data.flag.c[i]] = this.#Colors.hslObjToHex(data.hue.surface, data.saturation.surface, data.lightness[mode].surface[i][j], data.alpha.surface);
+               result[data.flag.a[j] + data.name.surface + data.flag.c[i]] = this.#Colors.hslObjToHex(data.hue.surface, data.saturation.surface, data
+                  .lightness[mode].surface[i][j], data.alpha.surface);
             }
          }
          for (let i in data.flag.d) {
-            result[data.name.outline + data.flag.d[i]] = this.#Colors.hslObjToHex(data.hue.outline, data.saturation.outline[i], data.lightness[mode].outline[i], data.alpha.outline);
+            result[data.name.outline + data.flag.d[i]] = this.#Colors.hslObjToHex(data.hue.outline, data.saturation.outline[i], data.lightness[mode]
+               .outline[i], data.alpha.outline);
          }
          for (let i in root.customColors) {
             let limit = Object.keys(result);
@@ -3960,18 +3972,21 @@
          for (let i in data.name.custom) {
             for (let j in data.flag.b) {
                for (let k in data.flag.a) {
-                  result[data.flag.a[k] + data.name.custom[i] + data.flag.b[j]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], data.lightness[mode].accent[j][k], data.alpha.custom[i]);
+                  result[data.flag.a[k] + data.name.custom[i] + data.flag.b[j]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i],
+                     data.lightness[mode].accent[j][k], data.alpha.custom[i]);
                }
             }
             for (let j in data.flag.f) {
                for (let k in data.flag.a) {
-                  result[data.flag.a[k] + data.flag.f[j] + data.name.custom[i]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom, data.lightness[mode].accentLD[j][k], data.alpha.custom);
+                  result[data.flag.a[k] + data.flag.f[j] + data.name.custom[i]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom,
+                     data.lightness[mode].accentLD[j][k], data.alpha.custom);
                }
             }
          }
          for (let i in data.name.custom) {
             for (let j in data.flag.a) {
-               result[data.flag.a[j] + data.flag.e + data.name.custom[i]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], data.lightness[mode].inverse[j], data.alpha.custom[i]);
+               result[data.flag.a[j] + data.flag.e + data.name.custom[i]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], data
+                  .lightness[mode].inverse[j], data.alpha.custom[i]);
             }
          }
          return result;
@@ -4041,39 +4056,47 @@
          if (!root.reverseSubPalette || !mode) {
             for (let i in data.name.accent) {
                for (let j in root.parts) {
-                  result[data.name.accent[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, root.parts[j], data.alpha.accent);
+                  result[data.name.accent[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, root.parts[j],
+                     data.alpha.accent);
                }
             }
             for (let i in root.parts) {
-               result[data.name.error + '-' + root.parts[i]] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, root.parts[i], data.alpha.error);
+               result[data.name.error + '-' + root.parts[i]] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, root.parts[i], data.alpha
+                  .error);
             }
             for (let i in data.name.custom) {
                for (let j in root.parts) {
-                  result[data.name.custom[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], root.parts[j], data.alpha.custom[i]);
+                  result[data.name.custom[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], root.parts[
+                     j], data.alpha.custom[i]);
                }
             }
             for (let i in data.name.neutral) {
                for (let j in root.parts) {
-                  result[data.name.neutral[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.neutral, data.saturation.neutral[i], root.parts[j], data.alpha.neutral);
+                  result[data.name.neutral[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.neutral, data.saturation.neutral[i], root.parts[
+                     j], data.alpha.neutral);
                }
             }
          } else if (mode) {
             for (let i in data.name.accent) {
                for (let j in root.parts) {
-                  result[data.name.accent[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, root.parts[root.parts.length - 1] - root.parts[j], data.alpha.accent[i]);
+                  result[data.name.accent[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.accent[i], data.saturation.accent, root.parts[root
+                     .parts.length - 1] - root.parts[j], data.alpha.accent[i]);
                }
             }
             for (let i in root.parts) {
-               result[data.name.error + '-' + root.parts[i]] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, root.parts[root.parts.length - 1] - root.parts[i], data.alpha.error);
+               result[data.name.error + '-' + root.parts[i]] = this.#Colors.hslObjToHex(data.hue.error, data.saturation.error, root.parts[root.parts
+                  .length - 1] - root.parts[i], data.alpha.error);
             }
             for (let i in data.name.custom) {
                for (let j in root.parts) {
-                  result[data.name.custom[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], root.parts[root.parts.length - 1] - root.parts[j], data.alpha.custom[i]);
+                  result[data.name.custom[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.custom[i], data.saturation.custom[i], root.parts[
+                     root.parts.length - 1] - root.parts[j], data.alpha.custom[i]);
                }
             }
             for (let i in data.name.neutral) {
                for (let j in root.parts) {
-                  result[data.name.neutral[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.neutral, data.saturation.neutral[i], root.parts[root.parts.length - 1] - root.parts[j], data.alpha.neutral);
+                  result[data.name.neutral[i] + '-' + root.parts[j]] = this.#Colors.hslObjToHex(data.hue.neutral, data.saturation.neutral[i], root.parts[
+                     root.parts.length - 1] - root.parts[j], data.alpha.neutral);
                }
             }
          }
@@ -4126,5 +4149,6 @@
          this.#eventTarget.dispatchEvent(event);
       }
    }
+   
    window.Mushroom = Mushroom;
 })();
