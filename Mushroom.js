@@ -3688,15 +3688,14 @@
          if (!this.#clearConsole) {
             if (message != undefined) {
                console.log(
-                  `%c${title}%c\n %c${message}`,
-                  `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px`,
-                  '',
-                  `background: ${this.palette['primary-container']}; color: ${this.palette['on-primary-container']}; font-weight: 400; padding: 4px; border-radius: 8px; font-family: sreif; font-size: 13px;`
+                  `%c${title}%c${message}`,
+                  `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`,
+                  `background: ${this.palette['primary-container']}; color: ${this.palette['on-primary-container']}; font-weight: 400; padding: 4px; border-radius: 8px; margin: 4px 2px;`
                )
             } else {
                console.log(
                   `%c${title}`,
-                  `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px`
+                  `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`
                )
             }
          }
@@ -3705,10 +3704,9 @@
          if (!this.#clearConsole) {
             if (this.palette == undefined) this.#grow();
             console.log(
-               `%cMushroom Error:%c\n %c${message}`,
-               `background: ${this.palette['error']}; color: ${this.palette['on-error']}; font-weight: 900; padding: 4px; border-radius: 8px`,
-               '',
-               `background: ${this.palette['error-container']}; color: ${this.palette['on-error-container']}; font-weight: 400; padding: 4px; border-radius: 8px; font-family: sreif; font-size: 13px;`
+               `%cMushroom Error:%c${message}`,
+               `background: ${this.palette['error']}; color: ${this.palette['on-error']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`,
+               `background: ${this.palette['error-container']}; color: ${this.palette['on-error-container']}; font-weight: 400; padding: 4px; border-radius: 8px; margin: 4px 2px;`
             )
          }
       }
