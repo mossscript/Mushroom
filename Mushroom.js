@@ -2881,7 +2881,7 @@
          
          this.#setUp(configs);
          
-         if (configs.clearConsole) {
+         if (configs && configs.clearConsole) {
             if (this.#Validation.sprout(configs.clearConsole)) {
                this.#clearConsole = configs.clearConsole;
             } else {
