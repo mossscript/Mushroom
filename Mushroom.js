@@ -3751,8 +3751,8 @@
       }
       #errorLib(key, wrong) {
          let lib = {
-            1: `Invalid input: "${wrong}". The value must be a valid color in HEX, RGB, HSL, a recognized color name, or one of the following: primary, secondary, tertiary, quaternary.`,
-            2: `Invalid input: "${wrong}". The value must be one of the following: "primary", "secondary", "tertiary", "quaternary"`,
+            1: `Invalid input: "${wrong}". The value must be a valid color in HEX, RGB, HSL, a recognized color name.`,
+            2: `Invalid input: "${wrong}". The value must be a valid color in HEX, RGB, HSL, a recognized color name, or one of the following: primary, secondary, tertiary, quaternary.`,
             3: `Invalid input: "${wrong}". The value must be one of the following: light, dark, or auto.`,
             4: `Invalid input: "${wrong}". The value must be one of the following: analogous, complementary, tetradic, compound, split-complementary, monochromatic, triadic, or square.`,
             5: `Invalid input: "${wrong}". The value must be a number.`,
