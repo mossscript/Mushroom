@@ -1,1 +1,1 @@
-# Mushroom.js v5.1
+# Mushroom.js v5.2
