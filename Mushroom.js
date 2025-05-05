@@ -2860,7 +2860,7 @@
       
       // constructor
       constructor(configs) {
-         this.version = "5.1";
+         this.version = "5.2";
          this.#Colors = new Colors();
          this.#Validation = new Validation();
          this.#eventTarget = new EventTarget();
@@ -3082,7 +3082,7 @@
          if (valid) {
             this.#setting('theme', val, root);
          } else {
-            this.#errorLib(3, val);
+            this.#errorLib(this.#nodejs ? 17 : 3, val);
          }
       }
       setColorScheme(val, root = this.#configs.root) {
@@ -3497,7 +3497,7 @@
                this.configs.theme = val;
                this.#success();
             } else {
-               this.#error(3, val);
+               this.#error(this.#nodejs ? 17 : 3, val);
             }
          }
          setColorScheme(val) {
@@ -3767,6 +3767,7 @@
             14: `Invalid input: The name "${wrong}" is already assigned to a root.`,
             15: `Not found: No root exists with the name "${wrong}".`,
             16: `Operation not allowed: You cannot manually change the theme of root "${wrong}" because its "followMainTheme" property is set to true.`,
+            17: `Invalid input: "${wrong}". The value must be one of the following: light or dark.`,
          }
          this.#error(lib[key]);
          let event = new CustomEvent('error', { detail: { key, wrong: lib[key] } });
@@ -4194,9 +4195,9 @@
    
    global.Mushroom = Mushroom;
    
+   // for nodejs
+   if (typeof window === 'undefined') {
+      module.exports = Mushroom;
+   }
+   
 })(globalThis);
-
-// for nodejs
-if (typeof window === 'undefined') {
-   module.exports = Mushroom;
-}
