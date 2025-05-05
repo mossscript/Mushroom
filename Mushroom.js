@@ -1,4 +1,4 @@
-/*** Mushroom v5.1 ***/
+/*** Mushroom v5.2 ***/
 ((global) => {
    class Colors {
       #colors;
@@ -2754,6 +2754,9 @@
       theme(val) {
          return /^(dark|light|auto)$/i.test(val);
       }
+      dualTheme(val) {
+         return /^(dark|light)$/i.test(val);
+      }
       contrast(val) {
          return (val == 'auto') || (typeof val == 'number' && val >= 0 && val <= 100);
       }
@@ -2853,14 +2856,17 @@
       #PCS;
       #code;
       
+      #nodejs
+      
       // constructor
       constructor(configs) {
          this.version = "5.1";
          this.#Colors = new Colors();
          this.#Validation = new Validation();
          this.#eventTarget = new EventTarget();
+         this.#nodejs = typeof window === 'undefined';
+         this.#PCS = this.#nodejs ? undefined : window.matchMedia("(prefers-color-scheme:dark)");
          this.#clearConsole = false;
-         this.#PCS = window.matchMedia("(prefers-color-scheme:dark)");
          this.#configs = {
             sprout: true,
             color: 'Medium Red Violet',
@@ -2880,6 +2886,8 @@
          this.#roots = {};
          this.#roots[this.#configs.root] = this.#configs;
          
+         if (this.#nodejs) this.#configs.theme = 'dark';
+         
          this.#setUp(configs);
          
          if (configs && configs.clearConsole) {
@@ -2889,9 +2897,11 @@
                this.#errorLib(10, configs.clearConsole);
             }
          }
-         this.#PCS.onchange = () => {
-            if (this.theme == 'auto') {
-               this.#grow();
+         if (this.#PCS) {
+            this.#PCS.onchange = () => {
+               if (this.theme == 'auto') {
+                  this.#grow();
+               }
             }
          }
          this.#grow();
@@ -3041,7 +3051,7 @@
       set code(val) {
          this.#code = val;
       }
-      get code(){
+      get code() {
          return this.#code;
       }
       
@@ -3063,7 +3073,12 @@
          }
       }
       setTheme(val, root = this.#configs.root) {
-         let valid = this.#Validation.theme(val);
+         let valid;
+         if (this.#nodejs) {
+            valid = this.#Validation.dualTheme(val);
+         } else {
+            valid = this.#Validation.theme(val);
+         }
          if (valid) {
             this.#setting('theme', val, root);
          } else {
@@ -3472,7 +3487,12 @@
             }
          }
          setTheme(val) {
-            let valid = this.#Validation.theme(val);
+            let valid;
+            if (this.#nodejs) {
+               valid = this.#Validation.dualTheme(val);
+            } else {
+               valid = this.#Validation.theme(val);
+            }
             if (valid) {
                this.configs.theme = val;
                this.#success();
@@ -3693,28 +3713,40 @@
       }
       #info(title, message) {
          if (!this.#clearConsole) {
-            if (message != undefined) {
-               console.log(
-                  `%c${title}%c${message}`,
-                  `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`,
-                  `background: ${this.palette['primary-container']}; color: ${this.palette['on-primary-container']}; font-weight: 400; padding: 4px; border-radius: 8px; margin: 4px 2px;`
-               )
+            if (this.#nodejs) {
+               if (message != undefined) {
+                  console.log(`[ ${title} ] : ${message}`);
+               } else {
+                  console.log(`[ ${title} ]`);
+               }
             } else {
-               console.log(
-                  `%c${title}`,
-                  `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`
-               )
+               if (message != undefined) {
+                  console.log(
+                     `%c${title}%c${message}`,
+                     `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`,
+                     `background: ${this.palette['primary-container']}; color: ${this.palette['on-primary-container']}; font-weight: 400; padding: 4px; border-radius: 8px; margin: 4px 2px;`
+                  )
+               } else {
+                  console.log(
+                     `%c${title}`,
+                     `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`
+                  )
+               }
             }
          }
       }
       #error(message) {
          if (!this.#clearConsole) {
-            if (this.palette == undefined) this.#grow();
-            console.log(
-               `%cMushroom Error:%c${message}`,
-               `background: ${this.palette['error']}; color: ${this.palette['on-error']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`,
-               `background: ${this.palette['error-container']}; color: ${this.palette['on-error-container']}; font-weight: 400; padding: 4px; border-radius: 8px; margin: 4px 2px;`
-            )
+            if (this.#nodejs) {
+               console.log(`[ Mushroom Error ] : ${message}`);
+            } else {
+               if (this.palette == undefined) this.#grow();
+               console.log(
+                  `%cMushroom Error:%c${message}`,
+                  `background: ${this.palette['error']}; color: ${this.palette['on-error']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`,
+                  `background: ${this.palette['error-container']}; color: ${this.palette['on-error-container']}; font-weight: 400; padding: 4px; border-radius: 8px; margin: 4px 2px;`
+               )
+            }
          }
       }
       #errorLib(key, wrong) {
@@ -4145,10 +4177,12 @@
          }
          
          // sprout
-         for (var root in this.#roots) {
-            if (this.#roots[root].sprout && code != '') {
+         if (!this.#nodejs) {
+            for (var root in this.#roots) {
+               if (this.#roots[root].sprout && code != '') {
                   this.#sprout(code);
                }
+            }
          }
          
          this.code = code;
@@ -4159,4 +4193,10 @@
    }
    
    global.Mushroom = Mushroom;
-})(this);
+   
+})(globalThis);
+
+// for nodejs
+if (typeof window === 'undefined') {
+   module.exports = Mushroom;
+}
