@@ -3738,7 +3738,7 @@
       #error(message) {
          if (!this.#clearConsole) {
             if (this.#nodejs) {
-               console.log(`[ Mushroom Error ] : ${message}`);
+               console.log('\x1b[1m\x1b[37m\x1b[41m' + `[ Mushroom Error ]` + '\x1b[0m' + ` : ${message}`);
             } else {
                if (this.palette == undefined) this.#grow();
                console.log(
