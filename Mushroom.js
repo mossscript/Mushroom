@@ -1,5 +1,5 @@
 /*** Mushroom v5.2 ***/
-(() => {
+((global) => {
    class Colors {
       #colors;
       constructor() {
@@ -4156,8 +4156,8 @@
       }
    }
    
-   window.Mushroom = Mushroom;
-})();
+   global.Mushroom = Mushroom;
+})(this);
 
 // for nodejs
 if (typeof window === undefined) {
