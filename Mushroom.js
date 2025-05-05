@@ -1,4 +1,4 @@
-/*** Mushroom v5.2 ***/
+/*** Mushroom v5.1 ***/
 ((global) => {
    class Colors {
       #colors;
@@ -2851,13 +2851,11 @@
       #configs;
       #roots;
       #PCS;
-      
-      #nodejs
+      #code;
       
       // constructor
       constructor(configs) {
          this.version = "5.1";
-         this.#nodejs = typeof window === undefined;
          this.#Colors = new Colors();
          this.#Validation = new Validation();
          this.#eventTarget = new EventTarget();
@@ -3039,6 +3037,12 @@
       }
       get followMainTheme() {
          return this.#configs.followMainTheme;
+      }
+      set code(val) {
+         this.#code = val;
+      }
+      get code(){
+         return this.#code;
       }
       
       // property 
@@ -4103,7 +4107,7 @@
          }
          return result;
       }
-      #code(obj, root) {
+      #toCode(obj, root) {
          let keys = Object.keys(obj);
          let values = Object.values(obj);
          let code = `\n${root.root} {\n`;
@@ -4136,17 +4140,15 @@
             this.#roots[root].subPalette = this.#subPalette(this.#roots[root]);
          }
          for (let root in this.#roots) {
-            code += this.#code(this.#roots[root].palette, this.#roots[root]);
-            code += this.#code(this.#roots[root].subPalette, this.#roots[root]);
+            code += this.#toCode(this.#roots[root].palette, this.#roots[root]);
+            code += this.#toCode(this.#roots[root].subPalette, this.#roots[root]);
          }
          
          // sprout
-         if (!this.#nodejs) {
-            for (var root in this.#roots) {
-               if (this.#roots[root].sprout && code != '') {
+         for (var root in this.#roots) {
+            if (this.#roots[root].sprout && code != '') {
                   this.#sprout(code);
                }
-            }
          }
          
          this.code = code;
@@ -4158,8 +4160,3 @@
    
    global.Mushroom = Mushroom;
 })(this);
-
-// for nodejs
-if (typeof window === undefined) {
-   module.exports = Mushroom
-}
