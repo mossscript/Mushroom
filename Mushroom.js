@@ -4158,3 +4158,8 @@
    
    window.Mushroom = Mushroom;
 })();
+
+// for nodejs
+if (typeof window === undefined) {
+   module.exports = Mushroom
+}
