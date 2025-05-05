@@ -1,4 +1,4 @@
-/*** Mushroom v5.1 ***/
+/*** Mushroom v5.2 ***/
 (() => {
    class Colors {
       #colors;
@@ -2852,9 +2852,12 @@
       #roots;
       #PCS;
       
+      #nodejs
+      
       // constructor
       constructor(configs) {
          this.version = "5.1";
+         this.#nodejs = typeof window === undefined;
          this.#Colors = new Colors();
          this.#Validation = new Validation();
          this.#eventTarget = new EventTarget();
@@ -4136,11 +4139,16 @@
             code += this.#code(this.#roots[root].palette, this.#roots[root]);
             code += this.#code(this.#roots[root].subPalette, this.#roots[root]);
          }
-         for (var root in this.#roots) {
-            if (this.#roots[root].sprout && code != '') {
-               this.#sprout(code);
+         
+         // sprout
+         if (!this.#nodejs) {
+            for (var root in this.#roots) {
+               if (this.#roots[root].sprout && code != '') {
+                  this.#sprout(code);
+               }
             }
          }
+         
          this.code = code;
          this.#hasGrown = true;
          let event = new CustomEvent('grow', {});
