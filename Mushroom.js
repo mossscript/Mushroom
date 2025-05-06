@@ -2730,7 +2730,6 @@
       string(val) {
          return typeof val == 'string';
       }
-      
       sprout(val) {
          return this.bool(val);
       }
@@ -2753,9 +2752,6 @@
       }
       theme(val) {
          return /^(dark|light|auto)$/i.test(val);
-      }
-      dualTheme(val) {
-         return /^(dark|light)$/i.test(val);
       }
       contrast(val) {
          return (val == 'auto') || (typeof val == 'number' && val >= 0 && val <= 100);
@@ -2785,7 +2781,6 @@
       followMainTheme(val) {
          return this.bool(val);
       }
-      
       log(obj) {
          let log = {};
          for (let i in obj) {
@@ -2856,16 +2851,13 @@
       #PCS;
       #code;
       
-      #nodejs
-      
       // constructor
       constructor(configs) {
          this.version = "5.2";
          this.#Colors = new Colors();
          this.#Validation = new Validation();
          this.#eventTarget = new EventTarget();
-         this.#nodejs = typeof window === 'undefined';
-         this.#PCS = this.#nodejs ? undefined : window.matchMedia("(prefers-color-scheme:dark)");
+         this.#PCS = window.matchMedia("(prefers-color-scheme:dark)");
          this.#clearConsole = false;
          this.#configs = {
             sprout: true,
@@ -2885,8 +2877,6 @@
          };
          this.#roots = {};
          this.#roots[this.#configs.root] = this.#configs;
-         
-         if (this.#nodejs) this.#configs.theme = 'dark';
          
          this.#setUp(configs);
          
@@ -3073,16 +3063,11 @@
          }
       }
       setTheme(val, root = this.#configs.root) {
-         let valid;
-         if (this.#nodejs) {
-            valid = this.#Validation.dualTheme(val);
-         } else {
-            valid = this.#Validation.theme(val);
-         }
+         let valid = this.#Validation.theme(val);
          if (valid) {
             this.#setting('theme', val, root);
          } else {
-            this.#errorLib(this.#nodejs ? 17 : 3, val);
+            this.#errorLib(3, val);
          }
       }
       setColorScheme(val, root = this.#configs.root) {
@@ -3487,17 +3472,12 @@
             }
          }
          setTheme(val) {
-            let valid;
-            if (this.#nodejs) {
-               valid = this.#Validation.dualTheme(val);
-            } else {
-               valid = this.#Validation.theme(val);
-            }
+            let valid = this.#Validation.theme(val);
             if (valid) {
                this.configs.theme = val;
                this.#success();
             } else {
-               this.#error(this.#nodejs ? 17 : 3, val);
+               this.#error(3, val);
             }
          }
          setColorScheme(val) {
@@ -3713,40 +3693,28 @@
       }
       #info(title, message) {
          if (!this.#clearConsole) {
-            if (this.#nodejs) {
-               if (message != undefined) {
-                  console.log(`[ ${title} ] : ${message}`);
-               } else {
-                  console.log(`[ ${title} ]`);
-               }
+            if (message != undefined) {
+               console.log(
+                  `%c${title}%c${message}`,
+                  `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`,
+                  `background: ${this.palette['primary-container']}; color: ${this.palette['on-primary-container']}; font-weight: 400; padding: 4px; border-radius: 8px; margin: 4px 2px;`
+               )
             } else {
-               if (message != undefined) {
-                  console.log(
-                     `%c${title}%c${message}`,
-                     `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`,
-                     `background: ${this.palette['primary-container']}; color: ${this.palette['on-primary-container']}; font-weight: 400; padding: 4px; border-radius: 8px; margin: 4px 2px;`
-                  )
-               } else {
-                  console.log(
-                     `%c${title}`,
-                     `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`
-                  )
-               }
+               console.log(
+                  `%c${title}`,
+                  `background: ${this.palette['primary']}; color: ${this.palette['on-primary']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`
+               )
             }
          }
       }
       #error(message) {
          if (!this.#clearConsole) {
-            if (this.#nodejs) {
-               console.log('\x1b[1m\x1b[37m\x1b[41m' + `[ Mushroom Error ]` + '\x1b[0m' + ` : ${message}`);
-            } else {
-               if (this.palette == undefined) this.#grow();
-               console.log(
-                  `%cMushroom Error:%c${message}`,
-                  `background: ${this.palette['error']}; color: ${this.palette['on-error']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`,
-                  `background: ${this.palette['error-container']}; color: ${this.palette['on-error-container']}; font-weight: 400; padding: 4px; border-radius: 8px; margin: 4px 2px;`
-               )
-            }
+            if (this.palette == undefined) this.#grow();
+            console.log(
+               `%cMushroom Error:%c${message}`,
+               `background: ${this.palette['error']}; color: ${this.palette['on-error']}; font-weight: 900; padding: 4px; border-radius: 8px; margin: 4px 2px;`,
+               `background: ${this.palette['error-container']}; color: ${this.palette['on-error-container']}; font-weight: 400; padding: 4px; border-radius: 8px; margin: 4px 2px;`
+            )
          }
       }
       #errorLib(key, wrong) {
@@ -3767,7 +3735,6 @@
             14: `Invalid input: The name "${wrong}" is already assigned to a root.`,
             15: `Not found: No root exists with the name "${wrong}".`,
             16: `Operation not allowed: You cannot manually change the theme of root "${wrong}" because its "followMainTheme" property is set to true.`,
-            17: `Invalid input: "${wrong}". The value must be one of the following: light or dark.`,
          }
          this.#error(lib[key]);
          let event = new CustomEvent('error', { detail: { key, wrong: lib[key] } });
@@ -4178,11 +4145,9 @@
          }
          
          // sprout
-         if (!this.#nodejs) {
-            for (var root in this.#roots) {
-               if (this.#roots[root].sprout && code != '') {
-                  this.#sprout(code);
-               }
+         for (var root in this.#roots) {
+            if (this.#roots[root].sprout && code != '') {
+               this.#sprout(code);
             }
          }
          
