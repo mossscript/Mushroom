@@ -1044,6 +1044,9 @@ class Mushroom {
          return typeof i === 'object' && Array.isArray(i) && i !== null
       },
       // Configs
+      id: i => {
+         return this.#V.str(i);
+      },
       color: i => {
          return this.#V.str(i) && this.#CL.isColor(i);
       },
@@ -1091,6 +1094,7 @@ class Mushroom {
       },
    };
    #W = {
+      'id': 'Invalid color "$1"!\nMust be an string',
       'color': 'Invalid color "$1"!\nAccepted formats: 148 standard colors, Hex, RGB, HSL, CMYK, or HSV',
       'surfaceColor': 'Invalid surfaceColor "$1".\nAccepted formats: 148 standard colors, Hex, RGB, HSL, CMYK, or HSV',
       'theme': 'Invalid theme "$1"!\nMust be a string value exactly matching: "light", "dark", or "auto"',
