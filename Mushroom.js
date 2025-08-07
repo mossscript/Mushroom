@@ -1095,6 +1095,9 @@ class Mushroom {
       hasSubColorLoopPalette: i => {
          return this.#V.bol(i);
       },
+      clearConsole: i => {
+         return this.#V.bol(i);
+      },
    };
    #W = {
       'id': 'Invalid id "$1"!\nMust be an string',
@@ -1120,6 +1123,7 @@ class Mushroom {
       'fixedSubPalette': 'Invalid fixedSubPalette "$1"!\nMust be boolean: true or false',
       'hasColorLoopPalette': 'Invalid hasColorLoopPalette "$1"!\nMust be boolean: true or false',
       'hasSubColorLoopPalette': 'Invalid hasSubColorLoopPalette "$1"!\nMust be boolean: true or false',
+      'clearConsole': 'Invalid clearConsole "$1"!\nMust be boolean: true or false',
       'UnauthorizedCustomColor': 'Unauthorized custom color name "$1".\n' +
          'Reserved system color names: ' +
          'primary, secondary, tertiary, quaternary, error\n' +
