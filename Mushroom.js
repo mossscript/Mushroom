@@ -443,15 +443,15 @@ class Mushroom {
                R /= 255;
                G /= 255;
                B /= 255;
-
+               
                let max = Math.max(R, G, B);
                let min = Math.min(R, G, B);
                let delta = max - min;
-
+               
                let H = 0;
                let S = 0;
                let V = max;
-
+               
                if (delta !== 0) {
                   if (max === R) {
                      H = (G - B) / delta;
@@ -463,9 +463,9 @@ class Mushroom {
                   H = Math.round((H * 60 + 360) % 360);
                   S = Math.round((delta / max) * 100);
                }
-
+               
                V = Math.round(V * 100);
-
+               
                return A === 1 ? `hsv(${H} ${S}% ${V}%)` : `hsv(${H} ${S}% ${V}% / ${A})`;
             },
             cmyk: (rgb) => {
@@ -475,17 +475,17 @@ class Mushroom {
                R /= 255;
                G /= 255;
                B /= 255;
-
+               
                let K = Math.min(1 - R, 1 - G, 1 - B);
                let C = (1 - R - K) / (1 - K) || 0;
                let M = (1 - G - K) / (1 - K) || 0;
                let Y = (1 - B - K) / (1 - K) || 0;
-
+               
                C = Math.round(C * 100);
                M = Math.round(M * 100);
                Y = Math.round(Y * 100);
                K = Math.round(K * 100);
-
+               
                return `cmyk(${C}% ${M}% ${Y}% ${K}%)`;
             }
          },
@@ -545,7 +545,7 @@ class Mushroom {
                R = Math.round((R + M) * 255);
                G = Math.round((G + M) * 255);
                B = Math.round((B + M) * 255);
-
+               
                return A === 1 ? `rgb(${R} ${G} ${B})` : `rgb(${R} ${G} ${B} / ${A})`;
             },
             hsl: (hsl) => {
@@ -576,41 +576,41 @@ class Mushroom {
                let channels = this.#C.hsv(hsv);
                if (!channels) return undefined;
                let { H, S, V, A } = channels;
-
+               
                H /= 60;
                S /= 100;
                V /= 100;
                const hi = Math.floor(H) % 6;
-
+               
                const f = H - Math.floor(H);
                const p = 255 * V * (1 - S);
                const q = 255 * V * (1 - (S * f));
                const t = 255 * V * (1 - (S * (1 - f)));
                V *= 255;
-
+               
                let R, G, B;
-
+               
                switch (hi) {
                   case 0:
-                  [R, G, B] = [V, t, p];
+                     [R, G, B] = [V, t, p];
                      break;
                   case 1:
-                  [R, G, B] = [q, V, p];
+                     [R, G, B] = [q, V, p];
                      break;
                   case 2:
-                  [R, G, B] = [p, V, t];
+                     [R, G, B] = [p, V, t];
                      break;
                   case 3:
-                  [R, G, B] = [p, q, V];
+                     [R, G, B] = [p, q, V];
                      break;
                   case 4:
-                  [R, G, B] = [t, p, V];
+                     [R, G, B] = [t, p, V];
                      break;
                   case 5:
-                  [R, G, B] = [V, p, q];
+                     [R, G, B] = [V, p, q];
                      break;
                }
-
+               
                return A === 1 ? `rgb(${R} ${G} ${B})` : `rgb(${R} ${G} ${B} / ${A})`;
             },
             hsl: (hsv) => {
@@ -641,20 +641,20 @@ class Mushroom {
                let channels = this.#C.cmyk(cmyk);
                if (!channels) return undefined;
                let { C, M, Y, K, A } = channels;
-
+               
                C /= 100;
                M /= 100;
                Y /= 100;
                K /= 100;
-
+               
                let R = 1 - Math.min(1, C * (1 - K) + K);
                let G = 1 - Math.min(1, M * (1 - K) + K);
                let B = 1 - Math.min(1, Y * (1 - K) + K);
-
+               
                R = Math.round(R * 255);
                G = Math.round(G * 255);
                B = Math.round(B * 255);
-
+               
                return A === 1 ? `rgb(${R} ${G} ${B})` : `rgb(${R} ${G} ${B} / ${A})`;
             },
             hsl: (cmyk) => {
@@ -830,14 +830,14 @@ class Mushroom {
       detect(input) {
          input = String(input).trim().toLowerCase();
          const colors = Array.from(this.#COLORS_MAP.keys());
-
+         
          if (colors.includes(this.#trimCase(input))) return "keyword";
          if (this.#R.hex.test(input)) return "hex";
          if (this.#R.rgb.test(input)) return "rgb";
          if (this.#R.hsl.test(input)) return "hsl";
          if (this.#R.hsv.test(input)) return "hsv";
          if (this.#R.cmyk.test(input)) return "cmyk";
-
+         
          return undefined;
       }
       getAllChannels(str) {
@@ -897,16 +897,16 @@ class Mushroom {
          const L = (color) => {
             const rgb = this.getChannels(this.toRgb(color));
             if (!rgb) return 0;
-
+            
             const channel = (c) => {
                const n = c / 255;
                return n <= 0.03928 ? n / 12.92 : Math.pow((n + 0.055) / 1.055, 2.4);
             };
-
+            
             const R = channel(rgb.R);
             const G = channel(rgb.G);
             const B = channel(rgb.B);
-
+            
             return 0.2126 * R + 0.7152 * G + 0.0722 * B;
          };
          const L1 = L(color2);
@@ -924,28 +924,28 @@ class Mushroom {
       getBestContrastColor(bgColor) {
          const white = '#FFFFFF';
          const black = '#000000';
-
+         
          const contrastWithWhite = this.getContrast(bgColor, white);
          const contrastWithBlack = this.getContrast(bgColor, black);
-
+         
          return contrastWithWhite >= contrastWithBlack ? white : black;
       }
       getHarmonies(str) {
          const channels = this.getChannels(this.toHsl(str));
          if (!channels) return undefined;
-
+         
          const { H, S, L, A } = channels;
          const result = {};
-
+         
          for (const [name, deltas] of Object.entries(this.#H)) {
             const arr = deltas.map(d => {
                const newHue = (H + d + 360) % 360;
                return this.channels.hsl.hex(newHue, S, L, A);
             });
-
+            
             result[name] = arr;
          }
-
+         
          return result;
       }
       getTints(color, ratio = 0.5) {
@@ -973,12 +973,12 @@ class Mushroom {
          const a = this.getChannels(this.toRgb(color1));
          const b = this.getChannels(this.toRgb(color2));
          if (!a || !b) return undefined;
-
+         
          const R = a.R + (b.R - a.R) * ratio;
          const G = a.G + (b.G - a.G) * ratio;
          const B = a.B + (b.B - a.B) * ratio;
          const A = a.A + (b.A - a.A) * ratio;
-
+         
          return this.channels.rgb.hex(R, G, B, A);
       }
       get convert() {
@@ -988,7 +988,7 @@ class Mushroom {
          return this.#channelsTransforms();
       }
    }
-
+   
    //-------------------------
    //    Private Variables 
    //-------------------------
@@ -1129,7 +1129,7 @@ class Mushroom {
          'primary, secondary, tertiary, quaternary, error\n' +
          'Please choose a different name',
    };
-
+   
    //-------------------------
    //       Constructor
    //-------------------------
@@ -1138,7 +1138,7 @@ class Mushroom {
       this.#setupConfigs(configs);
       this.#setupThemeChange();
    }
-
+   
    //-------------------------
    //     private Methods 
    //-------------------------
@@ -1205,40 +1205,42 @@ class Mushroom {
          const max = 1;
          const amplitude = (max - min) / 2;
          const offset = min + amplitude;
-         target = Math.round(target);
-
+         
+         const startIndex = Math.round((target % 360) / (360 / count)) % count;
+         
          const ratios = [];
          for (let i = 0; i < count; i++) {
             const angle = (i / count) * 2 * Math.PI;
             const value = offset + amplitude * Math.cos(angle);
             ratios.push(+value.toFixed(3));
          }
-
+         
+         const maxIndex = ratios.indexOf(max);
+         
          const result = [];
          for (let i = 0; i < count; i++) {
-            const index = (target + i) % count;
-            result.unshift(ratios[index]);
+            const index = (maxIndex + count - startIndex + i) % count;
+            result.push(ratios[index]);
          }
-
+         
          return result;
       };
+      
       let C = this.#C;
       let N = ['red', 'orange', 'yellow', 'lime', 'green', 'spring-green', 'sky-blue', 'royal-blue', 'blue', 'indigo', 'purple', 'pink'];
       let { H, S } = this.#CL.toHslChannels(C.color);
-      let target = H / N.length;
-      let count = N.length;
       let steps = 360 / N.length;
-      let ratio = makeToneRatios(target, count);
-      let result = {}
-
-
-      for (let i in ratio) {
+      
+      let ratios = makeToneRatios(H, N.length);
+      
+      let result = {};
+      for (let i = 0; i < N.length; i++) {
          result[N[i]] = {
-            H: i * steps,
-            S: ratio[i] * S,
-         }
+            H: (i * steps) % 360,
+            S: Math.min(100, ratios[i] * S)
+         };
       }
-
+      
       return result;
    }
    #palette() {
@@ -1251,7 +1253,7 @@ class Mushroom {
       let HA = AH.map(i => i + H > 360 ? i + H - 360 : i + H)
       let sH, sS, sL;
       let result = {};
-
+      
       if (C.contrast !== 'auto') L = C.contrast;
       if (V.color(C.surfaceColor)) {
          sH = this.#CL.getHue(C.surfaceColor);
@@ -1264,7 +1266,7 @@ class Mushroom {
          sS = S;
          sL = L;
       }
-
+      
       let D = {
          N: {
             accent: ['primary', 'secondary', 'tertiary', 'quaternary'],
@@ -1305,9 +1307,9 @@ class Mushroom {
             },
             dark: {
                accent: [
-                     [70, 10],
-                     [20 - L / 10, 70 + L / 10]
-                  ],
+                  [70, 10],
+                  [20 - L / 10, 70 + L / 10]
+               ],
                accentLD: [80, 60],
                surface: [15 - sL / 10, 17 - sL / 10, 19 - sL / 10, 21 - sL / 10, 30 - sL / 10],
                background: [10 - sL / 10, 70 + sL / 10],
@@ -1325,7 +1327,7 @@ class Mushroom {
             f: ['light-', 'dark-'],
          },
       }
-
+      
       for (let i in D.N.accent) {
          for (let j in D.F.b) {
             for (let k in D.F.a) {
@@ -1404,7 +1406,7 @@ class Mushroom {
       let HA = AH.map(i => i + H > 360 ? i + H - 360 : i + H)
       let sH, sS;
       let result = {};
-
+      
       if (V.color(C.surfaceColor)) {
          sH = this.#CL.getHue(C.surfaceColor);
          sS = this.#CL.getSaturation(C.surfaceColor);
@@ -1413,7 +1415,7 @@ class Mushroom {
          sH = HA[AN.indexOf(C.surfaceColor)];
          sS = S;
       }
-
+      
       let D = {
          N: {
             accent: AN,
@@ -1434,13 +1436,13 @@ class Mushroom {
             neutral: [sS / 4, sS / 2]
          },
       };
-
+      
       for (let i in C.customColors) {
          D.N.custom.push(i);
          D.H.custom.push(this.#CL.getHue(C.customColors[i]));
          D.S.custom.push(this.#CL.getSaturation(C.customColors[i]));
       }
-
+      
       if (C.fixedSubPalette) {
          for (let i in D.N.accent) {
             for (let j in C.parts) {
@@ -1549,7 +1551,7 @@ class Mushroom {
             }
          }
       }
-
+      
       return result;
    }
    #CLPalette() {
@@ -1557,28 +1559,28 @@ class Mushroom {
       let L = (C.contrast === 'auto') ? this.#CL.getLightness(C.color) : C.contrast;
       let theme = this.currentTheme();
       let result = {};
-
+      
       let l = {
          light: {
             accent: [
-                  [35, 100],
-                  [80 + L / 10, 20 - L / 10]
-               ],
+               [35, 100],
+               [80 + L / 10, 20 - L / 10]
+            ],
             accentLD: [45, 25],
          },
          dark: {
             accent: [
-                     [70, 10],
-                     [20 - L / 10, 70 + L / 10]
-                  ],
+               [70, 10],
+               [20 - L / 10, 70 + L / 10]
+            ],
             accentLD: [80, 60],
          },
       };
-
+      
       let a = ['', 'on-'];
       let b = ['', '-container'];
       let c = ['light-', 'dark-'];
-
+      
       let loop = this.#colorLoop();
       for (let i in loop) {
          for (let j in b) {
@@ -1590,14 +1592,14 @@ class Mushroom {
             result[c[j] + i] = this.#CL.channels.hsl.hex(loop[i].H, loop[i].S, l[theme].accentLD[j]);
          }
       }
-
-
+      
+      
       return result;
    }
    #CLSubPalette() {
       let C = this.#C;
       let result = {};
-
+      
       if (C.fixedSubPalette) {
          let loop = this.#colorLoop();
          for (let i in loop) {
@@ -1634,7 +1636,7 @@ class Mushroom {
             }
          }
       }
-
+      
       return result;
    }
    #toCss(obj) {
@@ -1650,13 +1652,13 @@ class Mushroom {
    #sprout() {
       let { id, comment } = this.#C;
       let head = document.head;
-
+      
       if (this.#O.styleElement) this.#O.styleElement.remove();
       if (this.#O.commentNode) this.#O.commentNode.remove();
-
+      
       this.#O.commentNode = document.createComment(` ${comment} `);
       head.appendChild(this.#O.commentNode);
-
+      
       this.#O.styleElement = document.createElement('style');
       this.#O.styleElement.id = id;
       this.#O.styleElement.textContent = this.#O.code;
@@ -1664,29 +1666,29 @@ class Mushroom {
    }
    #grow() {
       let C = this.#C;
-
+      
       // generate 
       if (C.hasPalette) this.#O.palette = this.#palette();
       if (C.hasSubPalette) this.#O.subPalette = this.#subPalette();
       if (C.hasColorLoopPalette) this.#O.colorLoopPalette = this.#CLPalette();
       if (C.hasSubColorLoopPalette) this.#O.subColorLoopPalette = this.#CLSubPalette();
-
+      
       this.#O.allPalettes = Object.assign({},
          this.#O.subColorLoopPalette,
          this.#O.colorLoopPalette,
          this.#O.subPalette,
          this.#O.palette
       );
-
+      
       this.#O.code = this.#toCss(this.#O.allPalettes);
-
+      
       // sprout
       if (C.sprout) this.#sprout(this.#O.code);
-
+      
       // event
       queueMicrotask(() => { this.#dispatch('grow', this.#O) })
    }
-
+   
    //-------------------------
    //         Methods 
    //-------------------------
@@ -1751,7 +1753,7 @@ class Mushroom {
       this.#setConfig('hasSubColorLoopPalette', val);
       return this;
    }
-
+   
    /* helper configs */
    addCustomColors(key, val) {
       let obj = Object.assign(this.#C.customColors, {
@@ -1770,7 +1772,7 @@ class Mushroom {
       this.#grow();
       return this;
    }
-
+   
    /* API */
    toggleTheme() {
       this.setTheme(isDarkmode() ? 'light' : 'dark');
@@ -1811,7 +1813,7 @@ class Mushroom {
       this.#O.code = {};
       return this;
    }
-
+   
    //-------------------------
    //        Property 
    //-------------------------
@@ -1822,7 +1824,7 @@ class Mushroom {
    set ongrow(callback) {
       this.#E.addEventListener('grow', (e) => callback(e.detail));
    }
-
+   
    /*** Output ***/
    get output() {
       return this.#O
@@ -1845,7 +1847,7 @@ class Mushroom {
    get code() {
       return this.#O.code;
    }
-
+   
    /*** Configs ***/
    set configs(val) {
       this.#setupConfigs(val);
@@ -1853,112 +1855,112 @@ class Mushroom {
    get configs() {
       return this.#C;
    }
-
+   
    set color(val) {
       this.setColor(val);
    }
    get color() {
       return this.#C.color;
    }
-
+   
    set surfaceColor(val) {
       this.setSurfaceColor(val);
    }
    get surfaceColor() {
       return this.#C.surfaceColor;
    }
-
+   
    set theme(val) {
       this.setTheme(val);
    }
    get theme() {
       return this.#C.theme;
    }
-
+   
    set colorHarmony(val) {
       this.setColorHarmony(val);
    }
    get colorHarmony() {
       return this.#C.colorHarmony;
    }
-
+   
    set contrast(val) {
       this.setContrast(val);
    }
    get contrast() {
       return this.#C.contrast;
    }
-
+   
    set parts(val) {
       this.setParts(val);
    }
    get parts() {
       return this.#C.parts;
    }
-
+   
    set prefers(val) {
       this.setPrefix(val);
    }
    get prefers() {
       return this.#C.prefers;
    }
-
+   
    set customColors(val) {
       this.setCustomColors(val);
    }
    get customColors() {
       return this.#C.customColors;
    }
-
+   
    set sprout(val) {
       this.setSprout(val);
    }
    get sprout() {
       return this.#C.sprout;
    }
-
+   
    set hasPalette(val) {
       this.setPalette(val);
    }
    get hasPalette() {
       return this.#C.hasPalette;
    }
-
+   
    set hasSubPalette(val) {
       this.setSubPalette(val);
    }
    get hasSubPalette() {
       return this.#C.hasSubPalette;
    }
-
+   
    set reverseSubPalette(val) {
       this.setReverseSubPalette(val);
    }
    get reverseSubPalette() {
       return this.#C.reverseSubPalette;
    }
-
+   
    set reverseSubPalette(val) {
       this.setReverseSubPalette(val);
    }
    get reverseSubPalette() {
       return this.#C.reverseSubPalette;
    }
-
+   
    set fixedSubPalette(val) {
       this.setFixedSubPalette(val);
    }
    get fixedSubPalette() {
       return this.#C.fixedSubPalette;
    }
-
+   
    set hasColorLoopPalette(val) {
       this.setColorLoopPalette(val);
    }
    get hasColorLoopPalette() {
       return this.#C.hasColorLoopPalette;
    }
-
+   
    set hasSubColorLoopPalette(val) {
       this.setColorSubLoopPalette(val);
    }
