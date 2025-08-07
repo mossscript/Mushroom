@@ -1160,7 +1160,7 @@ class Mushroom {
    #setupConfigs(configs) {
       let C = this.#C;
       for (let i in C) {
-         if (!!configs[i]) {
+         if (configs[i] !== undefined) {
             let V = this.#V[i](configs[i]);
             if (V) this.#C[i] = configs[i];
             else this.#warn(i, configs[i]);
